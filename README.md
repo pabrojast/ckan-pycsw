@@ -13,11 +13,11 @@
 * [Docker](https://docs.docker.com/get-docker/)
 
 ## Overview
-Docker compose environment (based on [pycsw](https://github.com/geopython/pycsw)) for development and testing with CKAN Open Data portals.[^2]
+Docker compose environment (based on [pycsw](https://github.com/geopython/pycsw)) for development and testing with CKAN Open Data portals.[^1]
 
 Available components:
 * **pycsw**: The pycsw app. An [OARec](https://ogcapi.ogc.org/records) and [OGC CSW](https://opengeospatial.org/standards/cat) server implementation written in Python.
-* **ckan2pycsw**: Software to achieve interoperability with the open data portals based on CKAN. To do this, ckan2pycsw reads data from an instance using the CKAN API, generates ISO-19115/ISO-19139 [^3] metadata using [pygeometa](https://geopython.github.io/pygeometa/), and populates a [pycsw](https://pycsw.org/) instance that exposes the metadata using CSW and OAI-PMH.
+* **ckan2pycsw**: Software to achieve interoperability with the open data portals based on CKAN. To do this, ckan2pycsw reads data from an instance using the CKAN API, generates ISO-19115/ISO-19139 [^2] metadata using [pygeometa](https://geopython.github.io/pygeometa/), and populates a [pycsw](https://pycsw.org/) instance that exposes the metadata using CSW and OAI-PMH.
 
 ## Quick start
 ### With docker compose
@@ -98,4 +98,4 @@ List of *containers*:
 | 0.0.0.0:8000->8000/tcp | pycsw |
 
 [^1]: Extends the @frafra [coat2pycsw](https://github.com/COATnor/coat2pycsw) package.
-[^3]: [INSPIRE dataset and service metadata](https://inspire.ec.europa.eu/id/document/tg/metadata-iso19139) based on ISO/TS 19139:2007. 
+[^2]: [INSPIRE dataset and service metadata](https://inspire.ec.europa.eu/id/document/tg/metadata-iso19139) based on ISO/TS 19139:2007. 
