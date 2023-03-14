@@ -1,11 +1,12 @@
-name: coat2pycsw
+name: ckan2pycsw
 services:
   pycsw:
     build:
       context: .
       dockerfile: Dockerfile
+    image: ghcr.io/mjanez/docker-pycsw:main
     environment:
-      COAT_URL: https://data.coat.no/
+      CKAN_URL: https://data.coat.no/
       PYCSW_URL: http://localhost:8080/pycsw/csw.py
     healthcheck:
       test:
@@ -14,7 +15,6 @@ services:
       - -qO
       - /dev/null
       - http://localhost:8000/pycsw/csw.py
-    image: ghcr.io/coatnor/coat2pycsw:main
     networks:
       default: null
     ports:
@@ -24,4 +24,4 @@ services:
       protocol: tcp
 networks:
   default:
-    name: coat2pycsw_default
+    name: ckan2pycsw_default
