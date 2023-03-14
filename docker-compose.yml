@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ghcr.io/mjanez/docker-pycsw:main
+    image: ghcr.io/mjanez/ckan-pycsw:main
     environment:
       CKAN_URL: https://data.coat.no/
       PYCSW_URL: http://localhost:8080/pycsw/csw.py
