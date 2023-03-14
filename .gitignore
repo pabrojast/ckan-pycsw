@@ -1,3 +1,5 @@
 .pdm.toml
 *.db
 pycsw.conf
+.venv
+.vscode
