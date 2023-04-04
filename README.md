@@ -51,6 +51,9 @@ git clone https://github.com/mjanez/ckan-pycsw
 cd ckan-pycsw
 
 docker compose up --build
+
+# Or detached mode
+docker-compose up -d --build
 ```
 
 >**Note**:<br>
