@@ -5,23 +5,22 @@ services:
       context: .
       dockerfile: Dockerfile
     image: ghcr.io/mjanez/ckan-pycsw:main
-    environment:
-      CKAN_URL: https://data.coat.no/
-      PYCSW_URL: http://localhost:8080/pycsw/csw.py
+    env_file:
+      - .env
     healthcheck:
       test:
       - CMD
       - wget
       - -qO
       - /dev/null
-      - http://localhost:8000/pycsw/csw.py
+      - ${PYCSW_URL}
     networks:
       default: null
     ports:
-    - mode: ingress
-      target: 8000
-      published: "8000"
-      protocol: tcp
+      - "0.0.0.0:${PYCSW_PORT}:${PYCSW_PORT}"
+    volumes:
+        - ./log:${APP_DIR}/log
+        - ./metadata:${APP_DIR}/metadata
 networks:
   default:
     name: ckan2pycsw_default

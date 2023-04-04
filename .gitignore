@@ -3,3 +3,7 @@
 pycsw.conf
 .venv
 .vscode
+__pycache__
+log
+metadata
+samples

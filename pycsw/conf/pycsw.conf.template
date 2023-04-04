@@ -30,7 +30,7 @@ identification_fees=None
 identification_accessconstraints=None
 provider_name=Sample
 provider_url=https://example.org/
-#contact_name=mjanez
+#contact_name=admin
 #contact_position=Position Title
 #contact_address=Mailing Address
 #contact_city=Madrid
@@ -57,12 +57,12 @@ table=records
 #filter=type = 'http://purl.org/dc/dcmitype/Dataset'
 
 #[metadata:inspire]
-#enabled=true
-#languages_supported=eng,spa
-#default_language=eng
-#date=YYYY-MM-DD
-#gemet_keywords=Utility and governmental services
-#conformity_service=notEvaluated
-#contact_name=Organization Name
-#contact_email=Email Address
-#temp_extent=YYYY-MM-DD/YYYY-MM-DD
+enabled=true
+languages_supported=eng,spa
+default_language=eng
+date=YYYY-MM-DD
+gemet_keywords=Utility and governmental services
+conformity_service=notEvaluated
+contact_name=Organization Name
+contact_email=Email Address
+temp_extent=YYYY-MM-DD/YYYY-MM-DD
