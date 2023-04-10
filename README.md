@@ -53,14 +53,14 @@ cd ckan-pycsw
 docker compose up --build
 
 # Or detached mode
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 >**Note**:<br>
-> Deploy the dev `docker-compose_dev.yaml` with:
+> Deploy the dev `docker compose_dev.yaml` with:
 >
 >```bash
-> docker compose -f docker-compose_dev.yml up --build
+> docker compose -f docker compose_dev.yml up --build
 >```
 
 
