@@ -24,6 +24,7 @@ import ptvsd
 
 
 URL = os.environ["CKAN_URL"]
+PYCSW_URL = os.environ["PYCSW_URL"]
 APP_DIR = os.environ["APP_DIR"]
 CKAN_API = "api/3/action/package_search"
 PYCSW_CKAN_SCHEMA = os.environ["PYCSW_CKAN_SCHEMA"]
@@ -37,17 +38,20 @@ OUPUT_SCHEMA = {
 }
 
 def get_datasets(base_url):
-    if not base_url.endswith('/'):
-            base_url += '/'
-    package_search = urljoin(base_url, CKAN_API)
-    res = requests.get(package_search, params={"rows": 0})
-    end = res.json()["result"]["count"]
-    rows = 10
-    for start in range(0, end, rows):
-        res = requests.get(package_search, params={"start": start, "rows": rows})
-        for dataset in res.json()["result"]["results"]:
-            if dataset["type"] == "dataset":
-                yield dataset
+    try:
+        if not base_url.endswith('/'):
+                base_url += '/'
+        package_search = urljoin(base_url, CKAN_API)
+        res = requests.get(package_search, params={"rows": 0})
+        end = res.json()["result"]["count"]
+        rows = 10
+        for start in range(0, end, rows):
+            res = requests.get(package_search, params={"start": start, "rows": rows})
+            for dataset in res.json()["result"]["results"]:
+                if dataset["type"] == "dataset":
+                    yield dataset
+    except Exception as e:
+        logging.error(f"{log_module}:ckan2pycsw | No metadata in CKAN: {base_url} | Error: {e}")
 
 def main():
     log_file(APP_DIR + "/log")
@@ -102,8 +106,10 @@ def main():
                     record = metadata.parse_record(context, xml_string, repo)[0]
                     repo.insert(record, "local", util.get_today_and_now())
                 except Exception as e:
-                    logging.error(f"{log_module}:ckan2pycsw | Complete metadata in CKAN for: {dataset['name']} [DCAT Type: {d_dcat_type.capitalize()}] Error: {e}")
+                    logging.error(f"{log_module}:ckan2pycsw | Fail when transform record from CKAN for: {dataset['name']} [DCAT Type: {d_dcat_type.capitalize()}] Error: {e}")
                     continue
+
+    logging.info(f"{log_module}:ckan2pycsw | Create a CSW Endpoint at: {PYCSW_URL}")
 
     # Export records to Folder
     pycsw.core.admin.export_records(
