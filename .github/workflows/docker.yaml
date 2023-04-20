@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - main
+      - latest
     tags: 
       - 'v*.*.*'
-      - latest
   pull_request:
     branches:
       - main
@@ -27,7 +27,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
       -
         name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       -
         name: Login to registry
         if: github.event_name != 'pull_request'
