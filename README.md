@@ -220,7 +220,9 @@ List of *containers*:
 ### Built images
 | Repository | Type | Docker tag | Size | Notes |
 | --- | --- | --- | --- | --- |
-| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:latest` | 389MB |  - |
+| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:v*.*.*` | 389MB |  Tag version. |
+| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:latest` | 389MB |  Latest stable version. |
+| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:main` | 389MB |  Dev version.  |
 
 ### Network ports settings
 | Ports | Container |
