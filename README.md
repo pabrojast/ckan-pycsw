@@ -42,9 +42,9 @@ Select the CKAN Schema (`PYCSW_CKAN_SCHEMA`), and the pycsw output schema (`PYCS
     * `iso19139`: Standard pycsw schema based on ISO 19139.
 
 >**Note**<br>
-> The output pycsw schema (`iso19139_inspire`), to comply with INSPIRE ISO 19139 is WIP. The validation of the dataset/series is complete and conforms to the [INSPIRE reference validator](https://inspire.ec.europa.eu/validator/home/index.html) datasets and dataset series (Conformance Class 1, 2, 2b and 2c). In contrast, spatial data services still fail in only 1 dimension. 
+> The output pycsw schema (`iso19139_inspire`), to comply with INSPIRE ISO 19139 is WIP. The validation of the dataset/series is complete and conforms to the [INSPIRE reference validator](https://inspire.ec.europa.eu/validator/home/index.html) datasets and dataset series (Conformance Class 1, 2, 2b and 2c). In contrast, spatial data services still fail in only 1 dimension [WIP]. 
 
-To deploy the environment, `docker compose` will build the images.
+To deploy the environment, `docker compose` will build the latest image ([`ghcr.io/mjanez/ckan-pycsw:latest`](https://github.com/mjanez/ckan-pycsw/pkgs/container/ckan-pycsw)).
 
 ```bash
 git clone https://github.com/mjanez/ckan-pycsw
@@ -57,7 +57,7 @@ docker compose up -d --build
 ```
 
 >**Note**:<br>
-> Deploy the dev `docker compose_dev.yaml` with:
+> Deploy the dev (local build) `docker compose_dev.yaml` with:
 >
 >```bash
 > docker compose -f docker compose_dev.yml up --build

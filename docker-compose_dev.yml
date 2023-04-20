@@ -4,7 +4,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ghcr.io/mjanez/ckan-pycsw:main
     env_file:
       - .env
     environment:
