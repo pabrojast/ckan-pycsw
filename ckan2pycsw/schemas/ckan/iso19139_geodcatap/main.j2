@@ -70,6 +70,9 @@
         "charset": "utf8",
         "title": "{{ record['title'] }}",
         "abstract": "{{ record['notes'] }}",
+        {% if record['graphic_overview'] %}
+            "browsegraphic": "{{ record['graphic_overview'] }}",
+        {% endif %}
         {% if record['version'] %}
             "edition": "{{ record['version'] }}",
         {% endif %}
