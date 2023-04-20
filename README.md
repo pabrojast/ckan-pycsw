@@ -18,9 +18,12 @@
 ## Overview
 Docker compose environment (based on [pycsw](https://github.com/geopython/pycsw)) for development and testing with CKAN Open Data portals.[^1]
 
+>**Note**<br>
+> In the integration with: [mjanez/ckan-docker](https://github.com/mjanez/ckan-docker)[^2], it is possible to test it with a CKAN-type open data portal.
+
 Available components:
 * **pycsw**: The pycsw app. An [OARec](https://ogcapi.ogc.org/records) and [OGC CSW](https://opengeospatial.org/standards/cat) server implementation written in Python.
-* **ckan2pycsw**: Software to achieve interoperability with the open data portals based on CKAN. To do this, `ckan2pycsw` reads data from an instance using the CKAN API, generates INSPIRE ISO-19115/ISO-19139 [^2] metadata using [pygeometa](https://geopython.github.io/pygeometa/), or another custom schema, and populates a [pycsw](https://pycsw.org/) instance that exposes the metadata using CSW and OAI-PMH.
+* **ckan2pycsw**: Software to achieve interoperability with the open data portals based on CKAN. To do this, `ckan2pycsw` reads data from an instance using the CKAN API, generates INSPIRE ISO-19115/ISO-19139 [^3] metadata using [pygeometa](https://geopython.github.io/pygeometa/), or another custom schema, and populates a [pycsw](https://pycsw.org/) instance that exposes the metadata using CSW and OAI-PMH.
 
 ## Quick start
 ### With docker compose
@@ -220,9 +223,9 @@ List of *containers*:
 ### Built images
 | Repository | Type | Docker tag | Size | Notes |
 | --- | --- | --- | --- | --- |
-| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:v*.*.*` | 389MB |  Tag version. |
-| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:latest` | 389MB |  Latest stable version. |
-| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:main` | 389MB |  Dev version.  |
+| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:v*.*.*` | 175 MB |  Tag version. |
+| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:latest` | 175 MB |  Latest stable version. |
+| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:main` | 175 MB |  Dev version.  |
 
 ### Network ports settings
 | Ports | Container |
@@ -230,4 +233,5 @@ List of *containers*:
 | 0.0.0.0:8000->8000/tcp | pycsw |
 
 [^1]: Extends the @frafra [coat2pycsw](https://github.com/COATnor/coat2pycsw) package.
-[^2]: [INSPIRE dataset and service metadata](https://inspire.ec.europa.eu/id/document/tg/metadata-iso19139) based on ISO/TS 19139:2007. 
+[^2]: A custom installation of Docker Compose with specific extensions for spatial data and [GeoDCAT-AP](https://github.com/SEMICeu/GeoDCAT-AP)/[INSPIRE](https://github.com/INSPIRE-MIF/technical-guidelines) metadata [profiles].(https://en.wikipedia.org/wiki/Geospatial_metadata).
+[^3]: [INSPIRE dataset and service metadata](https://inspire.ec.europa.eu/id/document/tg/metadata-iso19139) based on ISO/TS 19139:2007. 
