@@ -5,6 +5,8 @@ pycsw.conf
 .vscode
 __pycache__
 log/*
+!log/README.md
 metadata/*
+!metadata/README.md
 samples
 .env
