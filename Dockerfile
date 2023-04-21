@@ -9,8 +9,9 @@ ENV PYCSW_CONFIG=${APP_DIR}/pycsw.conf
 ENV CKAN_URL=http://localhost:5000/
 ENV PYCSW_PORT=8000
 ENV PYCSW_URL=http://localhost:${PYCSW_PORT}/
-ENV DEV_MODE: False
+ENV DEV_MODE=False
 ENV TIMEOUT=300
+ENV PYCSW_CRON_DAYS_INTERVAL=2
 
 RUN apt-get -q -y update && \
     apt-get install -y wget && \

@@ -27,7 +27,11 @@ Available components:
 
 ## Quick start
 ### With docker compose
-Configure by changing the `.env` file. Change `PYCSW_URL` and `CKAN_URL`,  as well as the published port `PYCSW_PORT`, if needed.
+Copy the `.env.example` template and configure by changing the `.env` file. Change `PYCSW_URL` and `CKAN_URL`,  as well as the published port `PYCSW_PORT`, if needed.
+
+    ```shell
+    cp .env.example .env
+    ```
 
 Select the CKAN Schema (`PYCSW_CKAN_SCHEMA`), and the pycsw output schema (`PYCSW_OUPUT_SCHEMA`).
 - Default: 
