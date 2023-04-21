@@ -4,7 +4,7 @@ pycsw.conf
 .venv
 .vscode
 __pycache__
-log
-metadata
+log/*
+metadata/*
 samples
 .env
