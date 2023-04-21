@@ -205,7 +205,13 @@ New metadata schemas can be extended or added to convert elements extracted from
     ```
 
 ## Test
-Perform a [GetRecords request](http://localhost:8000/?request=GetRecords&service=CSW&version=3.0.0&typeNames=gmd:MD_Metadata&outputSchema=http://www.isotc211.org/2005/gmd&elementSetName=full).
+Perform a Perform a GetRecords request:
+
+    {PYCSW_URL}?request=GetRecords&service=CSW&version=2.0.2&typeNames=gmd:MD_Metadata&outputSchema=http://www.isotc211.org/2005/gmd&elementSetName=full
+
+
+- The `ckan-pycsw` logs will be created in the [`/log`](/log/) folder.
+- Metadata records in `XML` format ([ISO 19139](https://www.iso.org/standard/67253.html)) are stored in the [`/metadata`](/metadata/) folder.
 
 ## Debug
 ### VSCode
