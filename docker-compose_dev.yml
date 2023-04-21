@@ -3,11 +3,9 @@ services:
   pycsw:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     env_file:
       - .env
-    environment:
-      DEV_MODE: True
     healthcheck:
       test:
       - CMD

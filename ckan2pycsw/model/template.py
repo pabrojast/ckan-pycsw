@@ -4,7 +4,7 @@ import yaml
 import os
 import pathlib
 import logging
-import json
+import simplejson as json
 import six
 
 # third-party libraries
@@ -326,10 +326,22 @@ def scheming_clean_json_list(value):
     :param value: The object to serialize.
     :rtype: string
     """
-    if isinstance(value, six.string_types):
-        return value
     try:
-        return json.loads(value, strict=False)
+        if isinstance(value, str):
+            value = json.loads(value, strict=False)
+            out = []
+            for element in value:
+                # Avoid errors
+                if '"' in element:
+                    element=element.replace('"', '\\"')
+                if 'http' in element:
+                    element=element.replace(' ', '')
+                out.append(element.strip())
+            value = out
+        else:
+            value = json.loads(value, strict=False)
+        return value
+    
     except (TypeError, ValueError):
         return value
 
@@ -345,7 +357,7 @@ def scheming_get_json_list(ckan_field, data):
   value = data[ckan_field]
   # 1. single string to List or 2. List
   if value is not None:
-    if isinstance(value, six.string_types):
+    if isinstance(value, str):
         if "[" not in value:
             value = value.split(",")
         else:
@@ -358,7 +370,7 @@ def scheming_get_json_list(ckan_field, data):
         if not element:
             continue
 
-        if not isinstance(element, six.string_types):
+        if not isinstance(element, str):
             print(_('invalid type for repeating text: %r')
                                 % element)
             continue
@@ -385,36 +397,43 @@ def scheming_get_json_list(ckan_field, data):
 
 def scheming_get_object_list(ckan_field, data):
     json_data = scheming_clean_json_list(data[ckan_field])
-    return json.loads(json_data, strict=False)
+    return json_data
 
 def update_object_lists(data):
-    for key in data:
-        if  isinstance(data[key], six.string_types):
-            if '[' in data[key] or ']' in data[key]:
-                try:
-                    data[key] = scheming_get_object_list(key, data)
-                except:
-                    pass
-            elif '\n' in data[key] or '\r' in data[key]:
-                data[key] = data[key].replace('\n', '\\n').replace('\r', '\\r')
+    def process_string(s):
+        if s.startswith('["') or s.endswith('"]'):
+            try:
+                return scheming_get_object_list(key, data)
+            except:
+                pass
+        elif s.startswith('{"') or s.endswith('"}'):
+            try:
+                return json.loads(s, strict=False)
+            except:
+                pass
+        elif s == "[]":
+            return ""
+        elif '\n' in s or '\r' in s or '"' in s:
+            s = s.replace('\n', '\\n').replace('\r', '\\r').replace('"', '\\"')
+        return s.strip()
 
-    # check also if exists key['resources'] and if it is a list same as above
-    if 'resources' in data:
-        for resource in data['resources']:
-            for key in resource:
-                if  isinstance(resource[key], six.string_types):
-                    if '[' in resource[key] or ']' in resource[key]:
-                        try:
-                            resource[key] = scheming_get_object_list(key, resource)
-                        except:
-                            pass
-                    elif '\n' in resource[key] or '\r' in resource[key]:
-                        resource[key] = resource[key].replace('\n', '\\n').replace('\r', '\\r')
+    try:
+        for key in data:
+            if isinstance(data[key], str):
+                data[key] = process_string(data.get(key, ""))
+        if 'resources' in data:
+            for resource in data['resources']:
+                for key in resource:
+                    if isinstance(resource[key], str):
+                        resource[key] = process_string(resource.get(key, ""))
+    except:
+        pass
+
     return data
 
 def update_large_text_lists(data):
     for key in data:
-        if  isinstance(data[key], six.string_types):
+        if  isinstance(data[key], str):
             if '\n' in data[key] or '\r' in data[key]:
                 try:
                     data[key] = json.dumps(data[key], ensure_ascii=False)
@@ -432,7 +451,7 @@ def scheming_valid_json_object(value):
     """
     if not value:
         return
-    elif isinstance(value, six.string_types):
+    elif isinstance(value, str):
         try:
             loaded = json.loads(value, strict=False)
 
