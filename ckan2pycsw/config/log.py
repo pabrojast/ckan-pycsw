@@ -1,5 +1,6 @@
 # inbuilt libraries
 import logging
+import logging.handlers
 import os
 from datetime import datetime
 
@@ -29,4 +30,15 @@ def log_file(log_folder):
                         datefmt="%Y-%m-%d %H:%M:%S", 
                         level=logging.INFO
                         )
+    
+    log_files = os.listdir(log_folder)
+    log_files = [f for f in log_files if f.endswith('.log')]
+
+    # sort the list of log files by modification date
+    log_files.sort(key=lambda x: os.path.getmtime(os.path.join(log_folder, x)))
+
+    # delete all old log files except for the 10 most recent ones
+    for log_file in log_files[:-10]:
+        os.remove(os.path.join(log_folder, log_file))
+
     return logger
