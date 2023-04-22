@@ -145,7 +145,6 @@ def run_tasks():
     Check if gunicorn is running. Kill any gunicorn process with "gunicorn" or "pycsw.wsgi:application" in its name or command line.
     Execute the main function. Restart gunicorn after the main function finishes.
     """
-    log_file(APP_DIR + "/log")
     for proc in psutil.process_iter(["pid", "name", "cmdline"]):
         if "gunicorn" in proc.info["name"] or "pycsw.wsgi:application" in ' '.join(proc.info["cmdline"]):
             print(f"Stopping gunicorn process with PID {proc.info['pid']}...")
