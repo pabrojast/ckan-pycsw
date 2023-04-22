@@ -4,7 +4,7 @@ import pathlib
 from configparser import ConfigParser
 from urllib.parse import urljoin
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, time
 import subprocess
 import time
 
@@ -33,6 +33,10 @@ try:
     PYCSW_CRON_DAYS_INTERVAL = int(os.environ["PYCSW_CRON_DAYS_INTERVAL"])
 except (KeyError, ValueError):
     PYCSW_CRON_DAYS_INTERVAL = 3
+try:
+    PYCSW_CRON_HOUR_START = int(os.environ["PYCSW_CRON_HOUR_START"])
+except (KeyError, ValueError):
+    PYCSW_CRON_HOUR_START = 4
 method = "nightly"
 URL = os.environ["CKAN_URL"]
 PYCSW_URL = os.environ["PYCSW_URL"]
@@ -52,6 +56,21 @@ OUPUT_SCHEMA = {
 
 
 def get_datasets(base_url):
+    """
+    Retrieve a generator of CKAN datasets from the specified CKAN instance.
+
+    Parameters
+    ----------
+    base_url: str. The base URL of the CKAN instance.
+
+    Returns
+    -------
+    generator: A generator that yields CKAN datasets.
+
+    Raises
+    ------
+    requests.exceptions.RequestException: If an error occurs while communicating with the CKAN instance.
+    """
     try:
         if not base_url.endswith("/"):
                 base_url += "/"
@@ -68,6 +87,24 @@ def get_datasets(base_url):
         logging.error(f"{log_module}:ckan2pycsw | No metadata in CKAN: {base_url} | Error: {e}")
 
 def main():
+    """
+    Convert metadata from CKAN to ISO19139 and store the records in a pycsw endpoint.
+
+    The function first sets up logging and reads the pycsw configuration from the specified file. It then checks if the pycsw database file exists and deletes it if it does.
+    
+    The database is then initialized using `pycsw.core.admin.setup_db()`. pycsw records are created and inserted into the database for each CKAN dataset that has a DCAT type of 'dataset', 'series', or 'service'.
+    
+    The records are created by rendering the CKAN metadata using a Jinja2 template and then transforming the resulting MCF dictionary into an XML string using a pycsw output schema.
+    
+    The function logs any errors that occur during this process and continues processing any remaining datasets.
+    
+    After all records have been inserted, the function exports them to the specified XML directory using
+    `pycsw.core.admin.export_records()`.
+
+    Returns
+    -------
+    None
+    """
     log_file(APP_DIR + "/log")
     logging.info(f"{log_module}:ckan2pycsw | Version: 0.1")
     pycsw_config = ConfigParser()
@@ -136,16 +173,31 @@ def main():
 
 
 def run_scheduler():
+    """
+    Schedule a recurring task to run at a specific time interval.
+
+    The task will run every `PYCSW_CRON_DAYS_INTERVAL` days, starting at 4:00 a.m.
+    The task consists of checking if a gunicorn process is running, killing it if necessary,
+    running the `main()` function, and restarting gunicorn afterwards.
+
+    Returns
+    -------
+    None
+    """
     scheduler = BlockingScheduler(timezone=TZ)
-    scheduler.add_job(run_tasks, "interval", days=PYCSW_CRON_DAYS_INTERVAL, next_run_time=datetime.now())
+    scheduler_start_date = datetime.now().replace(hour=PYCSW_CRON_HOUR_START, minute=0).strftime('%Y-%m-%d %H:%M:%S')
+    scheduler.add_job(run_tasks, "interval", days=PYCSW_CRON_DAYS_INTERVAL, start_date=scheduler_start_date)
     scheduler.start()
 
 def run_tasks():
     """
     Check if gunicorn is running. Kill any gunicorn process with "gunicorn" or "pycsw.wsgi:application" in its name or command line.
     Execute the main function. Restart gunicorn after the main function finishes.
+
+    Returns
+    -------
+    None
     """
-    log_file(APP_DIR + "/log")
     for proc in psutil.process_iter(["pid", "name", "cmdline"]):
         if "gunicorn" in proc.info["name"] or "pycsw.wsgi:application" in ' '.join(proc.info["cmdline"]):
             print(f"Stopping gunicorn process with PID {proc.info['pid']}...")
@@ -169,6 +221,7 @@ if __name__ == "__main__":
         # Pause the program until a remote debugger is attached
         ptvsd.wait_for_attach()
         main()
+    # Launch a cronjob 
     else:
+        run_tasks()
         run_scheduler()
-    
