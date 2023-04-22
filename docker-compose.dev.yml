@@ -6,19 +6,15 @@ services:
       dockerfile: Dockerfile.dev
     env_file:
       - .env
-    healthcheck:
-      test:
-      - CMD
-      - wget
-      - -qO
-      - /dev/null
-      - ${PYCSW_URL}
-    networks:
-      default: null
+    logging:
+      driver: "json-file"
+      options:
+          max-size: "100m"
+          max-file: "10"
     ports:
-    - "0.0.0.0:${PYCSW_PORT}:${PYCSW_PORT}"
-    # debugpy
-    - "5678:5678"
+      - "0.0.0.0:${PYCSW_PORT}:${PYCSW_PORT}"
+      # debugpy
+      - "5678:5678"
     volumes:
         - ./log:${APP_DIR}/log
         - ./metadata:${APP_DIR}/metadata
