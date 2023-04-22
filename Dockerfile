@@ -15,9 +15,9 @@ ENV PYCSW_CRON_DAYS_INTERVAL=2
 
 RUN apt-get -q -y update && \
     apt-get install -y wget && \
-    DEBIAN_FRONTEND=noninteractive apt-get -yq install gettext-base
-ADD https://raw.githubusercontent.com/eficode/wait-for/v2.2.3/wait-for /wait-for
-RUN chmod +x /wait-for && \
+    DEBIAN_FRONTEND=noninteractive apt-get -yq install gettext-base && \
+    wget -O /wait-for https://raw.githubusercontent.com/eficode/wait-for/v2.2.3/wait-for && \
+    chmod +x /wait-for && \
     python3 -m pip install pdm
 
 WORKDIR ${APP_DIR}
@@ -28,6 +28,7 @@ RUN pdm install --no-self --group prod
 COPY pycsw/conf/pycsw.conf.template pycsw/entrypoint.sh .
 COPY ckan2pycsw ckan2pycsw
 
-EXPOSE 8080/TCP
+EXPOSE ${PYCSW_PORT}/TCP
+
 ENTRYPOINT ["/bin/bash", "./entrypoint.sh"]
-CMD ["pdm", "run", "python3", "-m", "gunicorn", "pycsw.wsgi:application", "-b", "0.0.0.0:${PYCSW_PORT}"]
+CMD ["tail", "-f", "/dev/null"]

@@ -64,10 +64,10 @@ docker compose up -d --build
 ```
 
 >**Note**:<br>
-> Deploy the dev (local build) `docker compose_dev.yaml` with:
+> Deploy the dev (local build) `docker-compose.dev.yml` with:
 >
 >```bash
-> docker compose -f docker compose_dev.yml up --build
+> docker compose -f docker-compose.dev.yml up --build
 >```
 
 
@@ -205,13 +205,16 @@ New metadata schemas can be extended or added to convert elements extracted from
     ```
 
 ## Test
-Perform a Perform a GetRecords request:
+Perform a `GetRecords` request and return all:
 
-    {PYCSW_URL}?request=GetRecords&service=CSW&version=2.0.2&typeNames=gmd:MD_Metadata&outputSchema=http://www.isotc211.org/2005/gmd&elementSetName=full
+    {PYCSW_URL}?request=GetRecords&service=CSW&version=3.0.0&typeNames=gmd:MD_Metadata&outputSchema=http://www.isotc211.org/2005/gmd&elementSetName=full
 
 
 - The `ckan-pycsw` logs will be created in the [`/log`](/log/) folder.
 - Metadata records in `XML` format ([ISO 19139](https://www.iso.org/standard/67253.html)) are stored in the [`/metadata`](/metadata/) folder.
+
+>**Note**
+> The `GetRecords` operation allows clients to discover resources (datasets). The response is an `XML` document and the output schema can be specified.
 
 ## Debug
 ### VSCode
