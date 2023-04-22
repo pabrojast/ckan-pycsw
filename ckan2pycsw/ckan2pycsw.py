@@ -5,8 +5,11 @@ from configparser import ConfigParser
 from urllib.parse import urljoin
 import os
 from datetime import datetime, timedelta
+import subprocess
+import time
 
 # third-party libraries
+import psutil
 import requests
 import pycsw.core.config
 from pycsw.core import admin, metadata, repository, util
@@ -29,10 +32,11 @@ TZ = os.environ.get("TZ", "TZ")
 try:
     PYCSW_CRON_DAYS_INTERVAL = int(os.environ["PYCSW_CRON_DAYS_INTERVAL"])
 except (KeyError, ValueError):
-    PYCSW_CRON_DAYS_INTERVAL = 2
+    PYCSW_CRON_DAYS_INTERVAL = 3
 method = "nightly"
 URL = os.environ["CKAN_URL"]
 PYCSW_URL = os.environ["PYCSW_URL"]
+PYCSW_PORT = os.environ["PYCSW_PORT"]
 APP_DIR = os.environ.get("APP_DIR", "/app")
 CKAN_API = "api/3/action/package_search"
 PYCSW_CKAN_SCHEMA = os.environ.get("PYCSW_CKAN_SCHEMA", "iso19139_geodcatap")
@@ -131,13 +135,31 @@ def main():
          xml_dirpath=APP_DIR + "/metadata/")
 
 
-def run_at_specific_time(start_date):
+def run_scheduler():
     scheduler = BlockingScheduler(timezone=TZ)
-    scheduler.add_job(main, "interval", hours=PYCSW_CRON_DAYS_INTERVAL, start_date=start_date)
+    scheduler.add_job(run_tasks, "interval", days=PYCSW_CRON_DAYS_INTERVAL, next_run_time=datetime.now())
     scheduler.start()
-    cron_datetime = datetime.now().strftime("%Y-%m-%d %H:%M")
-    print(f"{log_module}:ckan2pycsw | Schedule App: {cron_datetime}")
-    logging.info(f"{log_module}:ckan2pycsw | Schedule App: {cron_datetime}")
+
+def run_tasks():
+    """
+    Check if gunicorn is running. Kill any gunicorn process with "gunicorn" or "pycsw.wsgi:application" in its name or command line.
+    Execute the main function. Restart gunicorn after the main function finishes.
+    """
+    log_file(APP_DIR + "/log")
+    for proc in psutil.process_iter(["pid", "name", "cmdline"]):
+        if "gunicorn" in proc.info["name"] or "pycsw.wsgi:application" in ' '.join(proc.info["cmdline"]):
+            print(f"Stopping gunicorn process with PID {proc.info['pid']}...")
+            proc.kill()
+            time.sleep(5)  # Wait for the gunicorn process to fully stop
+
+    # Execute the main function
+    main()
+
+    # Restart gunicorn after the main function finishes
+    try:
+        subprocess.Popen(["pdm", "run", "python3", "-m", "gunicorn", "pycsw.wsgi:application", "-b", f"0.0.0.0:{PYCSW_PORT}"])
+    except Exception as e:
+        logging.error(f"{log_module}:ckan2pycsw | Error starting gunicorn: {e}")
 
 if __name__ == "__main__":
     if DEV_MODE == True or DEV_MODE == "True":
@@ -148,7 +170,5 @@ if __name__ == "__main__":
         ptvsd.wait_for_attach()
         main()
     else:
-        start_date = datetime.now()
-        main() 
-        run_at_specific_time(start_date)
+        run_scheduler()
     

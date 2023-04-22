@@ -17,6 +17,7 @@ dependencies = [
     "debugpy>=1.6.6",
     "simplejson>=3.19.1",
     "apscheduler>=3.10.1",
+    "psutil>=5.9.5",
 ]
 requires-python = ">=3.8"
 license = {text = "GPLv3"}
