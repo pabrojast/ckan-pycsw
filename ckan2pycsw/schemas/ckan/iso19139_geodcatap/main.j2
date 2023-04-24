@@ -4,7 +4,11 @@
     {% set dcat_type = record['dcat_type'].rsplit('/', 1)[-1] %}
     "mcf": {"version": 1.0},
     "metadata": {
-        "identifier": "{{ record['id'] }}",
+        {% if record['identifier'] %}
+            "identifier": "{{ record['identifier'] }}",
+        {% else %}
+            "identifier": "{{ record['id'] }}",
+        {% endif %}
         "language": "{{ language }}",
         "charset": "UTF-8",
         {% if record['source'] %}

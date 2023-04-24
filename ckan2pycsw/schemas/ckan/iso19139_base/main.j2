@@ -1,8 +1,13 @@
 {
     {# ISO19139 Metadata Schema #}
+    {#TODO: Improve ISO19139 base schema #}
     "mcf": {"version": 1.0},
     "metadata": {
-        "identifier": "{{ record['id'] }}",
+        {% if record['identifier'] %}
+            "identifier": "{{ record['identifier'] }}",
+        {% else %}
+            "identifier": "{{ record['id'] }}",
+        {% endif %}
         "language": "es",
         "charset": "utf8",
         "datestamp": "{{ record['metadata_modified']|normalize_datetime }}",
