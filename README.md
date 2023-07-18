@@ -95,7 +95,7 @@ PYCSW_URL=http://localhost:8000 envsubst < pycsw/conf/pycsw.conf.template > pycs
 Generate database:
 ```bash
 rm -f cite.db
-CKAN_URL=https://des.iepnb.es/catalogo pdm run python3 ckan2pycsw/ckan2pycsw.py
+CKAN_URL=http://localhost:5000 pdm run python3 ckan2pycsw/ckan2pycsw.py
 ```
 
 Run:
