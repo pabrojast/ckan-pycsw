@@ -15,7 +15,7 @@ ENV TIMEOUT=300
 
 WORKDIR ${APP_DIR}
 
-COPY ckan-pycsw/conf/pycsw.conf.template ckan-pycsw/docker-entrypoint.d/entrypoint_dev.sh .
+COPY ckan-pycsw/conf/pycsw.conf.template ckan-pycsw/docker-entrypoint.d/entrypoint_dev.sh ./
 
 EXPOSE ${PYCSW_PORT}/TCP
 EXPOSE ${PYCSW_DEV_PORT}/TCP

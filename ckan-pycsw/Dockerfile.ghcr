@@ -15,6 +15,6 @@ ENV PYCSW_CRON_DAYS_INTERVAL=2
 
 WORKDIR ${APP_DIR}
 
-COPY ckan-pycsw/conf/pycsw.conf.template ckan-pycsw/docker-entrypoint.d/entrypoint.sh .
+COPY ckan-pycsw/conf/pycsw.conf.template ckan-pycsw/docker-entrypoint.d/entrypoint.sh ./
 
 ENTRYPOINT ["/bin/bash", "./entrypoint.sh"]

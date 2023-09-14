@@ -21,11 +21,11 @@ RUN apt-get -q -y update && \
     python3 -m pip install pdm
 
 WORKDIR ${APP_DIR}
-COPY pyproject.toml pdm.lock .
+COPY pyproject.toml pdm.lock ./
 
 RUN pdm install --no-self --group prod
 
-COPY ckan-pycsw/conf/pycsw.conf.template ckan-pycsw/docker-entrypoint.d/entrypoint.sh .
+COPY ckan-pycsw/conf/pycsw.conf.template ckan-pycsw/docker-entrypoint.d/entrypoint.sh ./
 COPY ckan2pycsw ckan2pycsw
 
 EXPOSE ${PYCSW_PORT}/TCP
