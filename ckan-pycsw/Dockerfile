@@ -1,4 +1,4 @@
-FROM python:3.11-slim-bullseye
+FROM python:3.11.5-slim-bullseye
 LABEL maintainer="mnl.janez@gmail.com"
 
 ENV APP_DIR=/app
@@ -25,7 +25,7 @@ COPY pyproject.toml pdm.lock .
 
 RUN pdm install --no-self --group prod
 
-COPY pycsw/conf/pycsw.conf.template pycsw/entrypoint.sh .
+COPY ckan-pycsw/conf/pycsw.conf.template ckan-pycsw/docker-entrypoint.d/entrypoint.sh .
 COPY ckan2pycsw ckan2pycsw
 
 EXPOSE ${PYCSW_PORT}/TCP

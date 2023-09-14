@@ -41,6 +41,7 @@ method = "nightly"
 URL = os.environ["CKAN_URL"]
 PYCSW_URL = os.environ["PYCSW_URL"]
 PYCSW_PORT = os.environ["PYCSW_PORT"]
+PYCSW_DEV_PORT = os.environ["PYCSW_DEV_PORT"]
 APP_DIR = os.environ.get("APP_DIR", "/app")
 CKAN_API = "api/3/action/package_search"
 PYCSW_CKAN_SCHEMA = os.environ.get("PYCSW_CKAN_SCHEMA", "iso19139_geodcatap")
@@ -214,9 +215,9 @@ def run_tasks():
         logging.error(f"{log_module}:ckan2pycsw | Error starting gunicorn: {e}")
 
 if __name__ == "__main__":
-    if DEV_MODE == True or DEV_MODE == "True":
+    if DEV_MODE == True or DEV_MODE.lower() == "true":
         # Allow other computers to attach to ptvsd at this IP address and port.
-        ptvsd.enable_attach(address=("0.0.0.0", 5678), redirect_output=True)
+        ptvsd.enable_attach(address=("0.0.0.0", PYCSW_DEV_PORT), redirect_output=True)
 
         # Pause the program until a remote debugger is attached
         ptvsd.wait_for_attach()
