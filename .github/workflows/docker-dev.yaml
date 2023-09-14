@@ -15,7 +15,8 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}-dev
   CONTEXT: .
-  DOCKERFILE: /ckan-pycsw/Dockerfile.dev
+  DOCKERFILE_PATH: /ckan-pycsw
+  DOCKERFILE: Dockerfile.dev
 
 jobs:
   docker:
@@ -52,12 +53,12 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           context: ${{ env.CONTEXT }}
-          file: ${{ env.DOCKERFILE }}
+          file: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
 
       - 
         name: Scan image
         uses: ISID/build-and-scan-image@v0.4.2
         with:
           tag: ${{ env.IMAGE_NAME }}
-          path: ${{ env.CONTEXT }}
+          path: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}
           dockerfile: ${{ env.DOCKERFILE }}
