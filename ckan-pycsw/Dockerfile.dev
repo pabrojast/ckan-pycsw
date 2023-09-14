@@ -18,13 +18,13 @@ ENV DEV_MODE=True
 ENV PYCSW_DEV_PORT=5678
 ENV TIMEOUT=300
 
-RUN apt-get -q -y update && apt-get install -y \
-    wget \
-    procps && \
-    DEBIAN_FRONTEND=noninteractive apt-get -yq install gettext-base && \
-    wget -O /wait-for https://raw.githubusercontent.com/eficode/wait-for/v2.2.4/wait-for && \
+RUN apt-get -q -y update && apt-get install -y --no-install-recommends && \
+        wget=1.21-1+deb11u1 \
+        gettext-base=0.21-4 \
+        procps=2:3.3.17-5 && \
+    wget --progress=dot:mega -O /wait-for https://raw.githubusercontent.com/eficode/wait-for/v2.2.4/wait-for && \
     chmod +x /wait-for && \
-    python3 -m pip install pdm debugpy && \
+    python3 -m pip install --no-cache-dir pdm==2.9.2 && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR ${APP_DIR}
