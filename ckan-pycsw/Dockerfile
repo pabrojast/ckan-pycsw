@@ -23,7 +23,7 @@ WORKDIR ${APP_DIR}
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME && \
     chown -R $USERNAME:$USERNAME $APP_DIR && \
-    apt-get -q -y update && apt-get install -y --no-install-recommends && \
+    apt-get -q -y update && apt-get install -y --no-install-recommends \
         wget=1.21-1+deb11u1 \
         gettext-base=0.21-4 && \
     wget --progress=dot:mega -O /wait-for https://raw.githubusercontent.com/eficode/wait-for/v2.2.4/wait-for && \
