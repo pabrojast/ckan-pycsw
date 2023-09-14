@@ -55,11 +55,8 @@ jobs:
           context: ${{ env.CONTEXT }}
           file: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
 
-  scan_docker_image:
-    runs-on: ubuntu-latest
-    needs: [ docker ]
-    steps:
-    -   name: Scan & lint image
+      - 
+        name: Scan & lint image
         uses: ISID/build-and-scan-image@v0.4.2
         continue-on-error: true
         with:
