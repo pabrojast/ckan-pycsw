@@ -1,6 +1,11 @@
 FROM ghcr.io/mjanez/ckan-pycsw-dev:latest
 LABEL maintainer="mnl.janez@gmail.com"
 
+# Production non-root user
+ENV USERNAME=ckan-pycsw
+ENV USER_UID=10001
+ENV USER_GID=$USER_UID
+# ckan-pycsw envvars
 ENV APP_DIR=/app
 ENV TZ=UTC
 RUN echo ${TZ} > /etc/timezone
@@ -19,6 +24,8 @@ COPY ckan-pycsw/conf/pycsw.conf.template ckan-pycsw/docker-entrypoint.d/entrypoi
 
 EXPOSE ${PYCSW_PORT}/TCP
 EXPOSE ${PYCSW_DEV_PORT}/TCP
+
+USER $USERNAME
 
 # Set entrypoint with debugpy
 ENTRYPOINT ["/bin/bash", "-c", "python3 -m debugpy --listen 0.0.0.0:${PYCSW_DEV_PORT} --wait-for-client ./entrypoint_dev.sh"]

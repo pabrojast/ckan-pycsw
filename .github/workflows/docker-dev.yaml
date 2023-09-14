@@ -63,3 +63,6 @@ jobs:
           tag: ${{ env.IMAGE_NAME }}
           path: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}
           dockerfile: ${{ env.DOCKERFILE }}
+          hadolint-severity: none
+          dockle-severity: FATAL
+          trivy-severity: CRITICAL

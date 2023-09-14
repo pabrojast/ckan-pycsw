@@ -1,6 +1,11 @@
 FROM python:3.11.5-slim-bullseye
 LABEL maintainer="mnl.janez@gmail.com"
 
+# Production non-root user
+ENV USERNAME=ckan-pycsw
+ENV USER_UID=10001
+ENV USER_GID=$USER_UID
+# ckan-pycsw envvars
 ENV APP_DIR=/app
 ENV TZ=UTC
 RUN echo ${TZ} > /etc/timezone
@@ -13,14 +18,19 @@ ENV DEV_MODE=False
 ENV TIMEOUT=300
 ENV PYCSW_CRON_DAYS_INTERVAL=2
 
-RUN apt-get -q -y update && \
-    apt-get install -y wget && \
+WORKDIR ${APP_DIR}
+
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME && \
+    chown -R $USERNAME:$USERNAME $APP_DIR && \
+    apt-get -q -y update && apt-get install -y \
+    wget && \
     DEBIAN_FRONTEND=noninteractive apt-get -yq install gettext-base && \
     wget -O /wait-for https://raw.githubusercontent.com/eficode/wait-for/v2.2.3/wait-for && \
     chmod +x /wait-for && \
-    python3 -m pip install pdm
+    python3 -m pip install pdm && \
+    rm -rf /var/lib/apt/lists/*
 
-WORKDIR ${APP_DIR}
 COPY pyproject.toml pdm.lock ./
 
 RUN pdm install --no-self --group prod
@@ -29,6 +39,8 @@ COPY ckan-pycsw/conf/pycsw.conf.template ckan-pycsw/docker-entrypoint.d/entrypoi
 COPY ckan2pycsw ckan2pycsw
 
 EXPOSE ${PYCSW_PORT}/TCP
+
+USER $USERNAME
 
 ENTRYPOINT ["/bin/bash", "./entrypoint.sh"]
 CMD ["tail", "-f", "/dev/null"]
