@@ -15,7 +15,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   CONTEXT: .
-  DOCKERFILE: ./ckan-pycsw/Dockerfile
+  DOCKERFILE: /ckan-pycsw/Dockerfile
 
 jobs:
   docker:
