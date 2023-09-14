@@ -1,0 +1,33 @@
+name: Scan & lint ckan-pycsw images
+
+on:
+    # Trigger the workflow after docker.yml
+    workflow_run:
+      workflows: ['Build ckan-pycsw images']
+      branches: ['main', 'latest']
+      pull_request:
+        branches: ['main']
+      types: 
+        - completed
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  CONTEXT: .
+  DOCKERFILE_PATH: /ckan-pycsw
+  DOCKERFILE: Dockerfile
+
+jobs:
+  image_scan:
+    runs-on: ubuntu-latest
+    steps:
+    -   name: Scan & lint image
+        uses: ISID/build-and-scan-image@v0.4.2
+        with:
+          tag: ${{ env.IMAGE_NAME }}
+          path: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}
+          dockerfile: ${{ env.DOCKERFILE }}
+          hadolint-severity: error
+          dockle-severity: FATAL
+          trivy-severity: HIGH,CRITICAL
+
