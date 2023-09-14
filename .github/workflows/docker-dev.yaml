@@ -66,7 +66,7 @@ jobs:
         name: Run Trivy container image vulnerability scanner
         uses: aquasecurity/trivy-action@0.12.0
         with:
-          image-ref: ${{ steps.meta.outputs.tags }}
+          image-ref:  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
           format: sarif
           output: trivy-results.sarif
   
