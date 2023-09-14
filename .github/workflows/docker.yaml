@@ -56,13 +56,23 @@ jobs:
           file: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
 
       - 
-        name: Scan & lint image
-        uses: ISID/build-and-scan-image@v0.4.2
-        continue-on-error: true
+        name: Linting image with hadolint
+        id: hadolint
+        uses: hadolint/hadolint-action@v3.1.0
         with:
-          tag: ${{ env.IMAGE_NAME }}
-          path: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}
-          dockerfile: ${{ env.DOCKERFILE }}
-          hadolint-severity: none
-          dockle-severity: FATAL
-          trivy-severity: CRITICAL
+          dockerfile: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
+
+      -
+        name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+  
+      - 
+        name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
