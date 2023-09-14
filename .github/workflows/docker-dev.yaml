@@ -1,4 +1,4 @@
-name: Build ckan-pycsw images
+name: Build ckan-pycsw-dev images
 
 on:
   push:
@@ -13,10 +13,10 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: ${{ github.repository }}-dev
   CONTEXT: .
   DOCKERFILE_PATH: /ckan-pycsw
-  DOCKERFILE: Dockerfile
+  DOCKERFILE: Dockerfile.dev
 
 jobs:
   docker:

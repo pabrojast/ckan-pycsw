@@ -5,7 +5,7 @@ services:
     container_name: ckan-pycsw-dev
     build:
       context: .
-      dockerfile: ckan-pycsw/Dockerfile.dev
+      dockerfile: ckan-pycsw/Dockerfile.ghcr.dev
     env_file:
       - .env
     logging:

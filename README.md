@@ -51,13 +51,18 @@ Select the CKAN Schema (`PYCSW_CKAN_SCHEMA`), and the pycsw output schema (`PYCS
 >**Note**<br>
 > The output pycsw schema (`iso19139_inspire`), to comply with INSPIRE ISO 19139 is WIP. The validation of the dataset/series is complete and conforms to the [INSPIRE reference validator](https://inspire.ec.europa.eu/validator/home/index.html) datasets and dataset series (Conformance Class 1, 2, 2b and 2c). In contrast, spatial data services still fail in only 1 dimension [WIP]. 
 
-To deploy the environment, `docker compose` will build the latest image ([`ghcr.io/mjanez/ckan-pycsw:latest`](https://github.com/mjanez/ckan-pycsw/pkgs/container/ckan-pycsw)).
+To deploy the environment, `docker compose` will build the latest source in the repo.
+
+If you can deploy a `5 minutes` image, use the latest ([`ghcr.io/mjanez/ckan-pycsw:latest`](https://github.com/mjanez/ckan-pycsw/pkgs/container/ckan-pycsw)) with [`docker-compose.ghcr.yml`](/docker-compose.ghcr.yml)
 
 ```bash
 git clone https://github.com/mjanez/ckan-pycsw
 cd ckan-pycsw
 
 docker compose up --build
+
+# Github latest registry image
+docker compose -f docker-compose.ghcr.yml --build
 
 # Or detached mode
 docker compose up -d --build
@@ -89,13 +94,13 @@ pdm install --no-self
 
 Configuration:
 ```bash
-PYCSW_URL=http://localhost:8000 envsubst < pycsw/conf/pycsw.conf.template > pycsw.conf
+PYCSW_URL=http://localhost:8000 envsubst < ckan-pycsw/conf/pycsw.conf.template > pycsw.conf
 ```
 
 Generate database:
 ```bash
 rm -f cite.db
-CKAN_URL=https://des.iepnb.es/catalogo pdm run python3 ckan2pycsw/ckan2pycsw.py
+CKAN_URL=http://localhost:5000 pdm run python3 ckan2pycsw/ckan2pycsw.py
 ```
 
 Run:
@@ -218,9 +223,18 @@ Perform a `GetRecords` request and return all:
 
 ## Debug
 ### VSCode
+#### Python debugger with Docker
 1. Build and run container.
-2. Attach Visual Studio Code to container
-3. Start debugging on `ckan2pycsw.py` Python file (`Debug the currently active Python file`).
+2. Attach Visual Studio Code to container.
+3. Start debugging on `ckan2pycsw.py` Python file (`Debug the currently active Python file`) in the container.
+
+#### Python debugger without Docker
+1. Update the previously created `.env` file in the root of the `ckan-ogc` repo and move it to: [`/ckan2pycsw`](/ckan2pycsw)
+2. Open [`ckan2pycsw.py`](/ckan2pycsw/ckan2pycsw.py).
+3. Start debugging on `ckan2pycsw.py` Python file (`Debug the currently active Python file`). 
+
+>**Note**<br
+> By default, the Python extension looks for and loads a file named `.env` in the current workspace folder. More info about Python debugger and [Enviromental variables use](https://code.visualstudio.com/docs/python/environments#_environment-variables).
 
 ## Containers
 List of *containers*:
@@ -236,9 +250,10 @@ List of *containers*:
 ### Built images
 | Repository | Type | Docker tag | Size | Notes |
 | --- | --- | --- | --- | --- |
-| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:v*.*.*` | 175 MB |  Tag version. |
+| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:latest-dev` | 175 MB |  Latest stable version from Registry. |
+| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:main-dev` | 175 MB |  Dev version from Registry.  |
 | mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:latest` | 175 MB |  Latest stable version. |
-| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:main` | 175 MB |  Dev version.  |
+| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:main` | 175 MB |  Development branch version. |
 
 ### Network ports settings
 | Ports | Container |
