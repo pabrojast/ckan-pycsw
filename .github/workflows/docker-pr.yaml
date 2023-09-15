@@ -4,7 +4,6 @@ on:
   pull_request:
     branches:
       - main
-      - stable
       - latest
 
 env:
@@ -35,7 +34,10 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            images: ${{ matrix.image }}
+            labels: |
+              org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/blob/${{ env.BRANCH }}/README.md
+              org.opencontainers.image.version=${{ env.BRANCH }}
 
       - name: Build to test
         uses: docker/build-push-action@v5
@@ -43,9 +45,7 @@ jobs:
         with:
           push: false
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BRANCH }}
-          labels: |
-            ${{ steps.meta.outputs.labels }}
-            org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/blob/${{ env.BRANCH }}/README.md
+          labels: ${{ steps.meta.outputs.labels }}
           context: ${{ env.CONTEXT }}
           file: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
 
