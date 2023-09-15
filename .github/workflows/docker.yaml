@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - latest
+      - main
   pull_request:
     branches:
       - main
@@ -79,7 +80,7 @@ jobs:
   docker-push:
     name: runner/build-docker-push
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.event.pull_request.merged == true
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
