@@ -42,7 +42,7 @@ jobs:
         id: docker-push
         with:
           push: false
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BRANCH }}
           labels: |
             ${{ steps.meta.outputs.labels }}
             org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/blob/${{ env.BRANCH }}/README.md
