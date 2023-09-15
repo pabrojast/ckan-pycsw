@@ -1,4 +1,4 @@
-name: Build and push ckan-pycsw image from main
+name: Build and push ckan-pycsw image from main push
 
 on:
   push:
@@ -8,22 +8,18 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  TAG: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
   CONTEXT: .
   BRANCH: ${{ github.ref_name }}
   DOCKERFILE_PATH: /ckan-pycsw
   DOCKERFILE: Dockerfile
-  HADOLINT_VERSION: 2.12.0
 
 jobs:
   docker:
     name: runner/build-docker-push:${{ github.ref_name }}
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - image: ghcr.io/${{ github.repository }}
-            tag: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
-            dockerfile: ./ckan-pycsw/Dockerfile
+    if: github.event_name == 'push'
+
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -45,7 +41,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ matrix.image }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           labels: |
             org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/blob/${{ env.BRANCH }}/README.md
             org.opencontainers.image.version=${{ env.BRANCH }}
@@ -54,20 +50,20 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ${{ matrix.tag }}
+          tags: ${{ env.TAG }}
           labels: ${{ steps.meta.outputs.labels }}
           context: ${{ env.CONTEXT }}
-          file: ${{ matrix.dockerfile }}
+          file: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
 
       - name: Linting Dockerfile with hadolint in GH Actions
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: ${{ matrix.dockerfile }}
+          dockerfile: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
 
       - name: Run Trivy container image vulnerability scanner
         uses: aquasecurity/trivy-action@0.12.0
         with:
-          image-ref: ${{ matrix.tag }}
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BRANCH }}
           format: sarif
           output: trivy-results.sarif
   
