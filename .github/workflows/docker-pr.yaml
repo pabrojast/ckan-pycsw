@@ -8,16 +8,17 @@ on:
       - latest
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-  CONTEXT: .
-  DOCKERFILE_PATH: /ckan-pycsw
-  DOCKERFILE: Dockerfile
-  HADOLINT_VERSION: 2.12.0
+    REGISTRY: ghcr.io
+    IMAGE_NAME: ${{ github.repository }}
+    CONTEXT: .
+    BRANCH: ${{ github.base_ref }}
+    DOCKERFILE_PATH: /ckan-pycsw
+    DOCKERFILE: Dockerfile
+    HADOLINT_VERSION: 2.12.0
 
 jobs:
   docker:
-    name: runner/test-docker-pr:${{ github.head_ref }}
+    name: runner/test-docker-pr:${{ github.base_ref }}
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
@@ -44,7 +45,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: |
             ${{ steps.meta.outputs.labels }}
-            org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/blob/main/README.md
+            org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/blob/${{ env.BRANCH }}/README.md
           context: ${{ env.CONTEXT }}
           file: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
 
@@ -60,7 +61,7 @@ jobs:
       - name: Run Trivy container image vulnerability scanner
         uses: aquasecurity/trivy-action@0.12.0
         with:
-          image-ref:  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.head_ref }}
+          image-ref:  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BRANCH }}
           format: sarif
           output: trivy-results.sarif
   
