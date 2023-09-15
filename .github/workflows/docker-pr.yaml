@@ -4,7 +4,6 @@ on:
   push:
   pull_request:
     branches:
-      - main
       - latest
 
 env:
@@ -17,7 +16,7 @@ env:
 
 jobs:
   docker-pr:
-    name: runner/test-docker-pr:${{ github.head_ref }}
+    name: runner/test-docker-pr
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
