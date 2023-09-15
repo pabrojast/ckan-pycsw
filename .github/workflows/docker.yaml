@@ -1,11 +1,11 @@
-name: Build and push ckan-pycsw images
+name: Build and push ckan-pycsw image
 
 on:
   pull_request:
     types:
       - closed
     branches:
-      - main
+      - stable
       - latest
 
 env:
@@ -17,10 +17,15 @@ env:
   HADOLINT_VERSION: 2.12.0
 
 jobs:
-  docker-push:
-    name: runner/build-docker-push
+  docker:
+    name: runner/build-docker-push:${{ github.head_ref }}
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true
+    strategy:
+      matrix:
+        include:
+          - image: ghcr.io/${{ github.repository }}
+            dockerfile: ./${{ github.repository }}/Dockerfile
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -32,7 +37,6 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Login to registry
-        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -43,22 +47,21 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ matrix.image }}
 
       - name: Build and push
         uses: docker/build-push-action@v5
-        id: docker-push
         with:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: |
             ${{ steps.meta.outputs.labels }}
             org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/blob/main/README.md
+          platforms: linux/amd64,linux/arm64
           context: ${{ env.CONTEXT }}
-          file: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
+          file: ${{ matrix.dockerfile }}
 
       - name: Linting Dockerfile with hadolint in GH Actions
-        id: hadolint
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
