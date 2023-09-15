@@ -36,18 +36,19 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          labels: |
+            org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/blob/${{ env.BRANCH }}/README.md
+            org.opencontainers.image.version=${{ env.BRANCH }}
 
       - name: Build to test
         uses: docker/build-push-action@v5
         id: docker-push
         with:
-          push: false
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: |
-            ${{ steps.meta.outputs.labels }}
-            org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/blob/${{ env.BRANCH }}/README.md
-          context: ${{ env.CONTEXT }}
-          file: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
+            push: false
+            tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BRANCH }}
+            labels: ${{ steps.meta.outputs.labels }}
+            context: ${{ env.CONTEXT }}
+            file: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
 
       - name: Linting Dockerfile and annotate code inline in the github PR viewer
         id: hadolint
