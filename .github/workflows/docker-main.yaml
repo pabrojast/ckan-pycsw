@@ -1,0 +1,78 @@
+name: Build and push ckan-pycsw image from main
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  CONTEXT: .
+  BRANCH: ${{ github.ref_name }}
+  DOCKERFILE_PATH: /ckan-pycsw
+  DOCKERFILE: Dockerfile
+  HADOLINT_VERSION: 2.12.0
+
+jobs:
+  docker:
+    name: runner/build-docker-push:${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - image: ghcr.io/${{ github.repository }}
+            tag: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+            dockerfile: ./ckan-pycsw/Dockerfile
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Login to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ matrix.image }}
+          labels: |
+            org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/blob/${{ env.BRANCH }}/README.md
+            org.opencontainers.image.version=${{ env.BRANCH }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ${{ matrix.tag }}
+          labels: ${{ steps.meta.outputs.labels }}
+          context: ${{ env.CONTEXT }}
+          file: ${{ matrix.dockerfile }}
+
+      - name: Linting Dockerfile with hadolint in GH Actions
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: ${{ matrix.dockerfile }}
+
+      - name: Run Trivy container image vulnerability scanner
+        uses: aquasecurity/trivy-action@0.12.0
+        with:
+          image-ref: ${{ matrix.tag }}
+          format: sarif
+          output: trivy-results.sarif
+  
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif

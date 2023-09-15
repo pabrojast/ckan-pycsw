@@ -1,9 +1,6 @@
 name: Build and push ckan-pycsw image
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
     types:
       - closed
