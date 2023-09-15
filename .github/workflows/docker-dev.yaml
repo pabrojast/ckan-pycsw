@@ -3,18 +3,19 @@ name: Build ckan-pycsw-dev images
 on:
   push:
     branches:
-      - main
       - latest
   pull_request:
     branches:
       - main
+      - latest
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}-dev
+  IMAGE_NAME: ${{ github.repository }}
   CONTEXT: .
   DOCKERFILE_PATH: /ckan-pycsw
-  DOCKERFILE: Dockerfile
+  DOCKERFILE: Dockerfile.dev
+  HADOLINT_VERSION: 2.12.0
 
 jobs:
   docker-pr:
@@ -29,6 +30,63 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build to test
+        uses: docker/build-push-action@v5
+        id: docker-push
+        with:
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: |
+            ${{ steps.meta.outputs.labels }}
+            org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/blob/main/README.md
+          context: ${{ env.CONTEXT }}
+          file: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
+
+      - name: Get image name
+        id: get-build-name
+        run: echo "image_name=${{ fromJSON(steps.docker-push.outputs.metadata)['image.name'] }}" >> $GITHUB_ENV
+
+      - name: Linting Dockerfile with hadolint and upload results to GitHub PR
+        id: hadolint
+        uses: jbergstroem/hadolint-gh-action@v1
+        with:
+          dockerfile: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
+          version: ${{ env.HADOLINT_VERSION }}
+          annotate: true
+
+      - name: Run Trivy container image vulnerability scanner
+        uses: aquasecurity/trivy-action@0.12.0
+        with:
+          image-ref:  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.head_ref }}
+          format: sarif
+          output: trivy-results.sarif
+  
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+
+  docker-push:
+    name: runner/build-docker-push
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Check out code
         uses: actions/checkout@v4
 
       - name: Login to registry
@@ -49,11 +107,11 @@ jobs:
         uses: docker/build-push-action@v5
         id: docker-push
         with:
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: |
             ${{ steps.meta.outputs.labels }}
-            documentation=https://github.com/${{ github.repository }}/blob/main/README.md
+            org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/blob/main/README.md
           context: ${{ env.CONTEXT }}
           file: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
 
@@ -61,75 +119,11 @@ jobs:
         id: get-build-name
         run: echo "image_name=${{ fromJSON(steps.docker-push.outputs.metadata)['image.name'] }}" >> $GITHUB_ENV
 
-      - name: Linting Dockerfile with hadolint and upload results to GitHub PR
+      - name: Linting Dockerfile with hadolint in GH Actions
         id: hadolint
-        uses: reviewdog/action-hadolint@v1.36.0
+        uses: hadolint/hadolint-action@v3.1.0
         with:
-          reporter: github-pr-review
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Run Trivy container image vulnerability scanner
-        uses: aquasecurity/trivy-action@0.12.0
-        with:
-          image-ref:  ${{ env.image_name }}
-          format: sarif
-          output: trivy-results.sarif
-  
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        if: always()
-        with:
-          sarif_file: trivy-results.sarif
-
-  docker-push:
-    name: runner/build-docker-push
-    runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
-    steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Check out code
-        uses: actions/checkout@v4
-
-      - name: Login to registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        id: docker-push
-        with:
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: |
-            ${{ steps.meta.outputs.labels }}
-            documentation=https://github.com/${{ github.repository }}/blob/main/README.md
-          context: ${{ env.CONTEXT }}
-          file: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
-
-      - name: Get image name
-        id: get-build-name
-        run: echo "image_name=${{ fromJSON(steps.docker-push.outputs.metadata)['image.name'] }}" >> $GITHUB_ENV
-
-      - name: Linting Dockerfile with hadolint and annotation is added to the line
-        id: hadolint
-        uses: reviewdog/action-hadolint@v1.36.0
-        with:
-          reporter: github-pr-check
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          dockerfile: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
 
       - name: Run Trivy container image vulnerability scanner
         uses: aquasecurity/trivy-action@0.12.0
