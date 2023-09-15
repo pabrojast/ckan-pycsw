@@ -27,6 +27,7 @@ jobs:
       matrix:
         include:
           - image: ghcr.io/${{ github.repository }}
+            tag: ghcr.io/${{ github.repository }}:${{ github.head_ref }}
             dockerfile: ./ckan-pycsw/Dockerfile
     steps:
       - name: Set up QEMU
@@ -55,7 +56,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ matrix.tag }}
           labels: |
             ${{ steps.meta.outputs.labels }}
             org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/blob/${{ env.BRANCH }}/README.md
@@ -65,12 +66,12 @@ jobs:
       - name: Linting Dockerfile with hadolint in GH Actions
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
+          dockerfile: ${{ matrix.dockerfile }}
 
       - name: Run Trivy container image vulnerability scanner
         uses: aquasecurity/trivy-action@0.12.0
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BRANCH }}
+          image-ref: ${{ matrix.tag }}
           format: sarif
           output: trivy-results.sarif
   
