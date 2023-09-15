@@ -1,6 +1,6 @@
 <h1 align="center">pycsw CKAN harvester ISO19139</h1>
 <p align="center">
-<a href="https://github.com/OpenDataGIS/ckan"><img src="https://img.shields.io/badge/%20pycsw-2.6.1-brightgreen" alt="pycsw ersion"></a><a href="https://opensource.org/licenses/MIT"> <img src="https://img.shields.io/badge/license-Unlicense-brightgreen" alt="License: Unlicense"></a> <a href="https://github.com/mjanez/ckan-pycsw/actions/workflows/docker/badge.svg" alt="License: Unlicense"></a>
+<a href="https://github.dev/mjanez/ckan-pycsw"><img src="https://img.shields.io/badge/%20pycsw-2.6.1-brightgreen" alt="pycsw ersion"></a><a href="https://opensource.org/licenses/MIT"> <img src="https://img.shields.io/badge/license-Unlicense-brightgreen" alt="License: Unlicense"></a> <a href="https://github.com/mjanez/ckan-pycsw/actions/workflows/docker/badge.svg" alt="License: Unlicense"></a>
 
 
 <p align="center">
