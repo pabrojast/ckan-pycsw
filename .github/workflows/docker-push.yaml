@@ -20,7 +20,7 @@ env:
 
 jobs:
   docker-push:
-    name: runner/build-docker-push
+    name: runner/build-docker-push:${{ github.head_ref }}
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.event.pull_request.merged == true
     steps:
