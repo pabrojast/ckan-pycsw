@@ -233,7 +233,7 @@ Perform a `GetRecords` request and return all:
 2. Open [`ckan2pycsw.py`](/ckan2pycsw/ckan2pycsw.py).
 3. Start debugging on `ckan2pycsw.py` Python file (`Debug the currently active Python file`). 
 
->**Note**<br
+>**Note**<br>
 > By default, the Python extension looks for and loads a file named `.env` in the current workspace folder. More info about Python debugger and [Enviromental variables use](https://code.visualstudio.com/docs/python/environments#_environment-variables).
 
 ## Containers
@@ -250,10 +250,11 @@ List of *containers*:
 ### Built images
 | Repository | Type | Docker tag | Size | Notes |
 | --- | --- | --- | --- | --- |
-| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:latest-dev` | 175 MB |  Latest stable version from Registry. |
-| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:main-dev` | 175 MB |  Dev version from Registry.  |
+| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:latest-dev` | 175 MB |  Latest stable version to development. |
 | mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:latest` | 175 MB |  Latest stable version. |
-| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:main` | 175 MB |  Development branch version. |
+
+>**Note**<br>
+> Other images may be available, but they have not been updated to the latest version.
 
 ### Network ports settings
 | Ports | Container |
