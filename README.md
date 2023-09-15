@@ -250,16 +250,18 @@ List of *containers*:
 ### Built images
 | Repository | Type | Docker tag | Size | Notes |
 | --- | --- | --- | --- | --- |
-| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:latest-dev` | 175 MB |  Latest stable version to development. |
-| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:latest` | 175 MB |  Latest stable version. |
+| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:latest` | 175 MB |  Dev & Test latest version. |
+| mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:main` | 175 MB |  Stable version. |
 
 >**Note**<br>
-> Other images may be available, but they have not been updated to the latest version.
+> GHCR and Dev `Dockerfiles` using `main` images as base.
 
 ### Network ports settings
 | Ports | Container |
 | --- | --- |
 | 0.0.0.0:8000->8000/tcp | pycsw |
+| 0.0.0.0:5678->5678/tcp | ckan-pycsw debug (debugpy) |
+
 
 [^1]: Extends the @frafra [coat2pycsw](https://github.com/COATnor/coat2pycsw) package.
 [^2]: A custom installation of Docker Compose with specific extensions for spatial data and [GeoDCAT-AP](https://github.com/SEMICeu/GeoDCAT-AP)/[INSPIRE](https://github.com/INSPIRE-MIF/technical-guidelines) metadata [profiles](https://en.wikipedia.org/wiki/Geospatial_metadata).
