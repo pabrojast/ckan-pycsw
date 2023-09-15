@@ -1,4 +1,4 @@
-name: Build & ckan-pycsw images
+name: Build and push ckan-pycsw images
 
 on:
   push:

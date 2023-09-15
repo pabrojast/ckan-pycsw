@@ -1,4 +1,4 @@
-name: Build and test ckan-pycsw images (PR)
+name: Test ckan-pycsw images (PR)
 
 on:
   push:
