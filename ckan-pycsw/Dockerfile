@@ -25,7 +25,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
     chown -R $USERNAME:$USERNAME $APP_DIR && \
     apt-get -q -y update && apt-get install -y --no-install-recommends \
         wget \
-        gettext-base \
+        gettext-base && \
     wget --progress=dot:mega -O /wait-for https://raw.githubusercontent.com/eficode/wait-for/v2.2.4/wait-for && \
     chmod +x /wait-for && \
     python3 -m pip install --no-cache-dir pdm==2.9.2 && \
