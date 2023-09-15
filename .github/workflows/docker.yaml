@@ -1,4 +1,4 @@
-name: Build and push ckan-pycsw image
+name: Build and push ckan-pycsw image from PR Merge
 
 on:
   pull_request:
