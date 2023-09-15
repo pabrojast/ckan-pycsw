@@ -12,20 +12,21 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   CONTEXT: .
+  BRANCH: ${{ github.base_ref }}
   DOCKERFILE_PATH: /ckan-pycsw
   DOCKERFILE: Dockerfile
   HADOLINT_VERSION: 2.12.0
 
 jobs:
   docker:
-    name: runner/build-docker-push:${{ github.head_ref }}
+    name: runner/build-docker-push:${{ github.base_ref }}
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true
     strategy:
       matrix:
         include:
           - image: ghcr.io/${{ github.repository }}
-            dockerfile: ./${{ github.repository }}/Dockerfile
+            dockerfile: ./ckan-pycsw/Dockerfile
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -56,7 +57,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: |
             ${{ steps.meta.outputs.labels }}
-            org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/blob/main/README.md
+            org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/blob/${{ env.BRANCH }}/README.md
           platforms: linux/amd64,linux/arm64
           context: ${{ env.CONTEXT }}
           file: ${{ matrix.dockerfile }}
@@ -69,7 +70,7 @@ jobs:
       - name: Run Trivy container image vulnerability scanner
         uses: aquasecurity/trivy-action@0.12.0
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.head_ref }}
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BRANCH }}
           format: sarif
           output: trivy-results.sarif
   
