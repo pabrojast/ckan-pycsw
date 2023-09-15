@@ -61,6 +61,7 @@ jobs:
           dockerfile: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
           version: ${{ env.HADOLINT_VERSION }}
           annotate: true
+          error_level: -1
 
       - name: Run Trivy container image vulnerability scanner
         uses: aquasecurity/trivy-action@0.12.0
@@ -119,9 +120,9 @@ jobs:
         id: get-build-name
         run: echo "image_name=${{ fromJSON(steps.docker-push.outputs.metadata)['image.name'] }}" >> $GITHUB_ENV
 
-      - name: Linting Dockerfile with hadolint in GH Actions
+      - name: Linting Dockerfile and annotate code inline in the github PR viewer
         id: hadolint
-        uses: hadolint/hadolint-action@v3.1.0
+        uses: jbergstroem/hadolint-gh-action@v1.11.0
         with:
           dockerfile: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
 

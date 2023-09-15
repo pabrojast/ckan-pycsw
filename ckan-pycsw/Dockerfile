@@ -1,4 +1,4 @@
-FROM python:slim-bullseye
+FROM python:3.11.5-slim-bullseye
 LABEL maintainer="mnl.janez@gmail.com"
 
 # Production non-root user
@@ -20,6 +20,7 @@ ENV PYCSW_CRON_DAYS_INTERVAL=2
 
 WORKDIR ${APP_DIR}
 
+# Create a new non-root user and group, install necessary packages and remove the package list cache
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME && \
     chown -R $USERNAME:$USERNAME $APP_DIR && \
@@ -31,15 +32,15 @@ RUN groupadd --gid $USER_GID $USERNAME \
     python3 -m pip install --no-cache-dir pdm==2.9.2 && \
     rm -rf /var/lib/apt/lists/*
 
+# Install python dependencies with pdm
 COPY pyproject.toml pdm.lock ./
-
 RUN pdm install --no-self --group prod
 
+# Update files
 COPY ckan-pycsw/conf/pycsw.conf.template ckan-pycsw/docker-entrypoint.d/entrypoint.sh ./
 COPY ckan2pycsw ckan2pycsw
 
-EXPOSE ${PYCSW_PORT}/TCP
-
+# Switch to non-root user
 USER $USERNAME
 
 ENTRYPOINT ["/bin/bash", "./entrypoint.sh"]
