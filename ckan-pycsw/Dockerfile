@@ -1,4 +1,4 @@
-FROM python:slim-bullseye
+FROM python:3.11.5-slim-bullseye
 LABEL maintainer="mnl.janez@gmail.com"
 
 # Production non-root user
