@@ -124,12 +124,11 @@ jobs:
         id: get-build-name
         run: echo "image_name=${{ fromJSON(steps.docker-push.outputs.metadata)['image.name'] }}" >> $GITHUB_ENV
 
-      - name: Linting Dockerfile with hadolint and annotation is added to the line
+      - name: Linting Dockerfile with hadolint
         id: hadolint
-        uses: reviewdog/action-hadolint@v1.36.0
+        uses: hadolint/hadolint-action@v3.1.0
         with:
-          reporter: github-pr-check
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          dockerfile: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
 
       - name: Run Trivy container image vulnerability scanner
         uses: aquasecurity/trivy-action@0.12.0
