@@ -58,7 +58,6 @@ jobs:
           labels: |
             ${{ steps.meta.outputs.labels }}
             org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/blob/${{ env.BRANCH }}/README.md
-          platforms: linux/amd64,linux/arm64
           context: ${{ env.CONTEXT }}
           file: ${{ matrix.dockerfile }}
 
