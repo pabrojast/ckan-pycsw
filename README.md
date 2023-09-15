@@ -19,7 +19,7 @@
 Docker compose environment (based on [pycsw](https://github.com/geopython/pycsw)) for development and testing with CKAN Open Data portals.[^1]
 
 >**Note**<br>
-> In the integration with: [mjanez/ckan-docker](https://github.com/mjanez/ckan-docker)[^2], it is possible to test it with a CKAN-type open data portal.
+> It can be easily tested with a CKAN-type Open Data portal deployment: [mjanez/ckan-docker](https://github.com/mjanez/ckan-docker)[^2].
 
 Available components:
 * **pycsw**: The pycsw app. An [OARec](https://ogcapi.ogc.org/records) and [OGC CSW](https://opengeospatial.org/standards/cat) server implementation written in Python.
