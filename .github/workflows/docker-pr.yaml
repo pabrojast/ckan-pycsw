@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - stable
       - latest
 
 env:
@@ -15,8 +16,8 @@ env:
   HADOLINT_VERSION: 2.12.0
 
 jobs:
-  docker-pr:
-    name: runner/test-docker-pr
+  docker:
+    name: runner/test-docker-pr:${{ github.head_ref }}
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
@@ -39,7 +40,7 @@ jobs:
         uses: docker/build-push-action@v5
         id: docker-push
         with:
-          push: ${{ github.event_name != 'pull_request' }}
+          push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: |
             ${{ steps.meta.outputs.labels }}
