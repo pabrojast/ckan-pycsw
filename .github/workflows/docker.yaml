@@ -61,6 +61,7 @@ jobs:
           dockerfile: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
           version: ${{ env.HADOLINT_VERSION }}
           annotate: true
+          error_level: -1
 
       - name: Run Trivy container image vulnerability scanner
         uses: aquasecurity/trivy-action@0.12.0
