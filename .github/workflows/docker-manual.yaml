@@ -1,9 +1,6 @@
-name: Build and push ckan-pycsw image from main push
+name: Build and release image manually
 
-on:
-  push:
-    branches:
-      - main
+on: workflow_dispatch
 
 env:
   REGISTRY: ghcr.io
@@ -16,9 +13,8 @@ env:
 
 jobs:
   docker:
-    name: runner/build-docker-push:${{ github.ref_name }}
+    name: manual/build-docker-push:${{ github.ref_name }}
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
 
     steps:
       - name: Set up QEMU
