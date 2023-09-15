@@ -49,11 +49,11 @@ jobs:
         uses: docker/build-push-action@v5
         id: docker-push
         with:
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: |
             ${{ steps.meta.outputs.labels }}
-            documentation=https://github.com/${{ github.repository }}/blob/main/README.md
+            org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/blob/main/README.md
           context: ${{ env.CONTEXT }}
           file: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
 
@@ -71,7 +71,7 @@ jobs:
       - name: Run Trivy container image vulnerability scanner
         uses: aquasecurity/trivy-action@0.12.0
         with:
-          image-ref:  ${{ env.image_name }}
+          image-ref:  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.head_ref }}
           format: sarif
           output: trivy-results.sarif
   
@@ -95,12 +95,9 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Login to registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build an image from Dockerfile
+        run: |
+          docker build -t docker.io/my-organization/my-app:${{ github.sha }} .
 
       - name: Extract Docker metadata
         id: meta
