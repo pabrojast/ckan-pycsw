@@ -59,9 +59,7 @@ jobs:
 
       - name: Get image name
         id: get-build-name
-        run: |
-          imageName=${{ fromJSON(steps.docker-push.outputs.metadata)['image.name'] }}
-          echo "::set-output name=image_name::$imageName}"
+        run: echo "image_name=${{ fromJSON(steps.docker-push.outputs.metadata)['image.name'] }}" >> $GITHUB_ENV
 
       - name: Linting Dockerfile with hadolint and upload results to GitHub PR
         id: hadolint
@@ -73,7 +71,7 @@ jobs:
       - name: Run Trivy container image vulnerability scanner
         uses: aquasecurity/trivy-action@0.12.0
         with:
-          image-ref:  ${{ steps.get-build-name.outputs.image_name}}
+          image-ref:  ${{ env.image_name }}
           format: sarif
           output: trivy-results.sarif
   
@@ -124,20 +122,19 @@ jobs:
 
       - name: Get image name
         id: get-build-name
-        run: |
-          imageName=${{ fromJSON(steps.docker-push.outputs.metadata)['image.name'] }}
-          echo "::set-output name=image_name::$imageName}"
+        run: echo "image_name=${{ fromJSON(steps.docker-push.outputs.metadata)['image.name'] }}" >> $GITHUB_ENV
 
-      - name: Linting Dockerfile with hadolint
+      - name: Linting Dockerfile with hadolint and annotation is added to the line
         id: hadolint
-        uses: hadolint/hadolint-action@v3.1.0
+        uses: reviewdog/action-hadolint@v1.36.0
         with:
-          dockerfile: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
+          reporter: github-pr-check
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run Trivy container image vulnerability scanner
         uses: aquasecurity/trivy-action@0.12.0
         with:
-          image-ref:  ${{ steps.get-build-name.outputs.image_name}}
+          image-ref:  ${{ env.image_name}}
           format: sarif
           output: trivy-results.sarif
   
