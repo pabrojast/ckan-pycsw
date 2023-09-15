@@ -47,10 +47,6 @@ jobs:
           context: ${{ env.CONTEXT }}
           file: ${{ env.CONTEXT }}${{ env.DOCKERFILE_PATH }}/${{ env.DOCKERFILE }}
 
-      - name: Get image name
-        id: get-build-name
-        run: echo "image_name=${{ fromJSON(steps.docker-push.outputs.metadata)['image.name'] }}" >> $GITHUB_ENV
-
       - name: Linting Dockerfile and annotate code inline in the github PR viewer
         id: hadolint
         uses: jbergstroem/hadolint-gh-action@v1.11.0
