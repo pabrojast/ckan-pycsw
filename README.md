@@ -53,7 +53,7 @@ Select the CKAN Schema (`PYCSW_CKAN_SCHEMA`), and the pycsw output schema (`PYCS
 
 To deploy the environment, `docker compose` will build the latest source in the repo.
 
-If you can deploy a `5 minutes` image, use the latest ([`ghcr.io/mjanez/ckan-pycsw:latest`](https://github.com/mjanez/ckan-pycsw/pkgs/container/ckan-pycsw)) with [`docker-compose.ghcr.yml`](/docker-compose.ghcr.yml)
+If you can deploy a `5 minutes` image, use the stable image ([`ghcr.io/mjanez/ckan-pycsw:main`](https://github.com/mjanez/ckan-pycsw/pkgs/container/ckan-pycsw)) with [`docker-compose.ghcr.yml`](/docker-compose.ghcr.yml)
 
 ```bash
 git clone https://github.com/mjanez/ckan-pycsw
@@ -61,7 +61,7 @@ cd ckan-pycsw
 
 docker compose up --build
 
-# Github latest registry image
+# Github main registry image
 docker compose -f docker-compose.ghcr.yml --build
 
 # Or detached mode
