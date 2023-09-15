@@ -3,11 +3,11 @@ name: Build ckan-pycsw images
 on:
   push:
     branches:
-      - main
       - latest
   pull_request:
     branches:
       - main
+      - latest
 
 env:
   REGISTRY: ghcr.io
@@ -84,7 +84,7 @@ jobs:
   docker-push:
     name: runner/build-docker-push
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.ref == 'refs/heads/latest'
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -124,7 +124,7 @@ jobs:
         id: get-build-name
         run: echo "image_name=${{ fromJSON(steps.docker-push.outputs.metadata)['image.name'] }}" >> $GITHUB_ENV
 
-      - name: Linting Dockerfile with hadolint
+      - name: Linting Dockerfile with hadolint in GH Actions
         id: hadolint
         uses: hadolint/hadolint-action@v3.1.0
         with:
