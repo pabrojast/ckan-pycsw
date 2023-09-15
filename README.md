@@ -69,7 +69,7 @@ docker compose up -d --build
 ```
 
 >**Note**:<br>
-> Deploy the dev (local build) `docker-compose.dev.yml` with:
+> Deploy the dev (multistage build) `docker-compose.dev.yml` with:
 >
 >```bash
 > docker compose -f docker-compose.dev.yml up --build
