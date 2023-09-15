@@ -11,14 +11,14 @@ env:
     REGISTRY: ghcr.io
     IMAGE_NAME: ${{ github.repository }}
     CONTEXT: .
-    BRANCH: ${{ github.base_ref }}
+    BRANCH: ${{ github.head_ref }}
     DOCKERFILE_PATH: /ckan-pycsw
     DOCKERFILE: Dockerfile
     HADOLINT_VERSION: 2.12.0
 
 jobs:
   docker:
-    name: runner/test-docker-pr:${{ github.base_ref }}
+    name: runner/test-docker-pr:${{ github.head_ref }}
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
