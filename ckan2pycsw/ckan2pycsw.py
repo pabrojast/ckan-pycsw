@@ -38,10 +38,10 @@ try:
 except (KeyError, ValueError):
     PYCSW_CRON_HOUR_START = 4
 method = "nightly"
-URL = os.environ["CKAN_URL"]
-PYCSW_URL = os.environ["PYCSW_URL"]
-PYCSW_PORT = os.environ["PYCSW_PORT"]
-PYCSW_DEV_PORT = os.environ["PYCSW_DEV_PORT"]
+URL = os.environ.get("CKAN_URL", 'http://localhost:5000/')
+PYCSW_PORT = os.environ.get("PYCSW_PORT", 8000)
+PYCSW_URL = os.environ.get("PYCSW_URL", f'http://localhost:{PYCSW_PORT}/')
+PYCSW_DEV_PORT = os.environ.get("PYCSW_DEV_PORT", 5678)
 APP_DIR = os.environ.get("APP_DIR", "/app")
 CKAN_API = "api/3/action/package_search"
 PYCSW_CKAN_SCHEMA = os.environ.get("PYCSW_CKAN_SCHEMA", "iso19139_geodcatap")
