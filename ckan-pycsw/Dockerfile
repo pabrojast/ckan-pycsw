@@ -17,6 +17,7 @@ ENV PYCSW_URL=http://localhost:${PYCSW_PORT}/
 ENV DEV_MODE=False
 ENV TIMEOUT=300
 ENV PYCSW_CRON_DAYS_INTERVAL=2
+ENV PYCSW_CRON_HOUR_START=4
 
 WORKDIR ${APP_DIR}
 
@@ -40,8 +41,8 @@ RUN pdm install --no-self --group prod
 COPY ckan-pycsw/conf/pycsw.conf.template ckan-pycsw/docker-entrypoint.d/entrypoint.sh ./
 COPY ckan2pycsw ckan2pycsw
 
-# Switch to non-root user
-USER $USERNAME
+# Switch to root user to change permissions of folders in entrypoint. Then switch back to non-root user.
+USER root
 
 ENTRYPOINT ["/bin/bash", "./entrypoint.sh"]
 CMD ["tail", "-f", "/dev/null"]
