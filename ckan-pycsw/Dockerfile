@@ -41,8 +41,5 @@ RUN pdm install --no-self --group prod
 COPY ckan-pycsw/conf/pycsw.conf.template ckan-pycsw/docker-entrypoint.d/entrypoint.sh ./
 COPY ckan2pycsw ckan2pycsw
 
-# Switch to root user to change permissions of folders in entrypoint. Then switch back to non-root user.
-USER root
-
 ENTRYPOINT ["/bin/bash", "./entrypoint.sh"]
 CMD ["tail", "-f", "/dev/null"]
