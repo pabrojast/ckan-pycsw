@@ -1,5 +1,5 @@
 # Base image
-FROM ghcr.io/mjanez/ckan-pycsw:main AS base
+FROM ghcr.io/mjanez/ckan-pycsw:latest AS base
 LABEL maintainer="mnl.janez@gmail.com"
 
 # ckan-pycsw envvars
@@ -17,10 +17,8 @@ ENV TIMEOUT=300
 WORKDIR ${APP_DIR}
 
 # Update files if needed
-COPY ckan-pycsw/docker-entrypoint.d/entrypoint_dev.sh /app/docker-entrypoint.d/
+COPY ckan-pycsw/conf/pycsw.conf.template ckan-pycsw/docker-entrypoint.d/entrypoint_dev.sh ./
 COPY ckan2pycsw /
-
-USER root
 
 # Install dependencies for development mode
 RUN apt-get -q -y update && apt-get install -y --no-install-recommends \
@@ -29,7 +27,8 @@ RUN apt-get -q -y update && apt-get install -y --no-install-recommends \
         debugpy==1.8.0 && \
     rm -rf /var/lib/apt/lists/*
 
-USER $USERNAME
+# Switch to root user to change permissions of folders in entrypoint. Then switch back to non-root user.
+USER root
 
 ENTRYPOINT ["/bin/bash", "-c", "python3 -m debugpy --listen 0.0.0.0:${PYCSW_DEV_PORT} --wait-for-client ./docker-entrypoint.d/entrypoint_dev.sh"]
 CMD ["pdm", "run", "python3", "-m", "gunicorn", "pycsw.wsgi:application", "-b", "0.0.0.0:${PYCSW_PORT}"]
