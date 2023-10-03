@@ -72,8 +72,8 @@
         "language": "{{ language }}",
         "languagelabel": "{{ language|get_mapping_value_from_yaml_list(input_field="value", output_field='label', codelist="language",mappings_folder=mappings_folder + "/ckan_geodcatap")}}",
         "charset": "utf8",
-        "title": "{{ record['title'] }}",
-        "abstract": "{{ record['notes'] }}",
+        "title": "{{ record['title']|safe }}",
+        "abstract": "{{ record['notes']|safe }}",
         {% if record['graphic_overview'] %}
             "browsegraphic": "{{ record['graphic_overview'] }}",
         {% endif %}
@@ -273,6 +273,12 @@
                         "uri": "{{ record['access_rights'] }}"
                         },
             {% endif %}
+
+        {% else %}
+            "accessconstraints": {
+                "label": "There are no limitations on public access to spatial data sets and services.",
+                "uri": "http://inspire.ec.europa.eu/metadata-codelist/LimitationsOnPublicAccess/noLimitations"
+                },       
         {% endif %}
         "url": "{{ url }}",
         "status": "UnderDevelopment",
@@ -360,7 +366,7 @@
                 "processstep": [
                     {% for step in record['lineage_process_steps'] %}
                         {
-                            "description": "{{ step }}"
+                            "description": "{{ step|safe }}"
                         }{% if not loop.last %},{% endif %}
                     {% endfor %}
                     ],
@@ -369,13 +375,13 @@
                 "source": [
                     {% for source in record['lineage_source'] %}
                         {
-                            "description": "{{ source }}"
+                            "description": "{{ source|safe }}"
                         }{% if not loop.last %},{% endif %}
                     {% endfor %}
                     ],
             {% endif %}
             {% if record['lineage_statement'] %}
-                "statement": "{{ record['provenance'] }}"
+                "statement": "{{ record['provenance']|safe }}"
             {% else %}
                 "statement": "No lineage statement provided"
             {% endif %}
