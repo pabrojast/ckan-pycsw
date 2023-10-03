@@ -71,6 +71,7 @@ def render_j2_template(mcf: dict, schema_type: str, url: str = None, template_di
         'normalize_datestring': normalize_datestring,
         'prune_distribution_formats': prune_distribution_formats,
         'prune_transfer_option': prune_transfer_option,
+        'escape_json': escape_json,
     }
 
     LOGGER.debug('Evaluating template directory')
@@ -82,7 +83,7 @@ def render_j2_template(mcf: dict, schema_type: str, url: str = None, template_di
 
     if schema_type == 'ckan':
         LOGGER.debug(f'Setting up template environment {template_dir} of type {schema_type}')
-        env = Environment(loader=FileSystemLoader(os.path.join(SCHEMAS_CKAN, template_dir)))
+        env = Environment(loader=FileSystemLoader(os.path.join(SCHEMAS_CKAN, template_dir)), autoescape=True)
 
         if template_dir != "iso19139_base":
             LOGGER.debug(f'Adding CKAN Schema mapping:{template_dir}')
@@ -111,14 +112,12 @@ def render_j2_template(mcf: dict, schema_type: str, url: str = None, template_di
 
         LOGGER.debug('Processing CKAN template to JSON')
         mcf = update_object_lists(mcf)
-        json_bytes = template.render(record=mcf).encode('utf-8')
-        
-        json_str = json_bytes.decode('utf-8')
+
+        mcf_dict = json.loads(template.render(record=mcf), strict=False)
 
         #TODO: Delete Dumps to log
-        #print(json.dumps(json.loads(json_str, strict=False), indent=4, ensure_ascii=False),  file=open(APP_DIR + '/log/demo_ckan.json', 'w', encoding='utf-8'))
-        
-        mcf_dict = json.loads(json_str, strict=False)
+        #print(json.dumps(mcf_dict, indent=4, ensure_ascii=False), file=open(APP_DIR + '/log/demo_ckan.json', 'w', encoding='utf-8'))
+
         return mcf_dict
 
     if schema_type == 'pygeometa':
@@ -399,36 +398,27 @@ def scheming_get_object_list(ckan_field, data):
     json_data = scheming_clean_json_list(data[ckan_field])
     return json_data
 
+def process_string(s):
+    if s.startswith('["') or s.endswith('"]') or s.startswith('{"') or s.endswith('"}'):
+        try:
+            return json.loads(s, strict=False)
+        except:
+            pass
+    return json.dumps(s)[1:-1].replace('\\"', "'").replace('"', "'")
+
 def update_object_lists(data):
-    def process_string(s):
-        if s.startswith('["') or s.endswith('"]'):
-            try:
-                return scheming_get_object_list(key, data)
-            except:
-                pass
-        elif s.startswith('{"') or s.endswith('"}'):
-            try:
-                return json.loads(s, strict=False)
-            except:
-                pass
-        elif s == "[]":
-            return ""
-        elif '\n' in s or '\r' in s or '"' in s:
-            s = s.replace('\n', '\\n').replace('\r', '\\r').replace('"', '\\"')
-        return s.strip()
-
-    try:
-        for key in data:
-            if isinstance(data[key], str):
-                data[key] = process_string(data.get(key, ""))
-        if 'resources' in data:
-            for resource in data['resources']:
-                for key in resource:
-                    if isinstance(resource[key], str):
-                        resource[key] = process_string(resource.get(key, ""))
-    except:
-        pass
-
+    for key in data:
+        if isinstance(data[key], str):
+            data[key] = process_string(data[key])
+        elif isinstance(data[key], list):
+            for i in range(len(data[key])):
+                if isinstance(data[key][i], str):
+                    data[key][i] = process_string(data[key][i])
+        elif isinstance(data[key], dict) and 'resources' in data[key]:
+            for resource in data[key]['resources']:
+                for k in resource:
+                    if isinstance(resource[k], str):
+                        resource[k] = process_string(resource[k])
     return data
 
 def update_large_text_lists(data):
@@ -653,3 +643,13 @@ def pretty_print(xml: str, encoding: str = 'UTF-8') -> str:
     LOGGER.debug('pretty-printing XML')
     val = minidom.parseString(xml.decode(encoding))
     return '\n'.join([val for val in val.toprettyxml(indent=' '*2).split('\n') if val.strip()])  # noqa
+
+def escape_json(value):
+    """
+    Escapes backslashes and other problematic characters in JSON.
+
+    :param value: The value to escape.
+
+    :returns: A string representing the escaped value for use in JSON.
+    """
+    return json.dumps(value).replace('\\', '\\\\').replace('"', '\\"')
