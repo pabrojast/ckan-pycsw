@@ -1,6 +1,10 @@
 {
     {# INSPIRE ISO19139 Metadata Schema #}
-    {% set language = record['language']|get_raw_value_from_ckan_schema(ckan_schema, 'language')%}
+    {% set language_iso19115 = record['language']|get_mapping_value_from_yaml_list(input_field="uri", output_field='iso_639_2', codelist="language",mappings_folder=mappings_folder + "/ckan_geodcatap") %}
+    {% set language_2code = record['language']|get_mapping_value_from_yaml_list(input_field="uri", output_field='iso_639_1', codelist="language",mappings_folder=mappings_folder + "/ckan_geodcatap") %}
+    {% set language_label = record['language']|get_mapping_value_from_yaml_list(input_field="uri", output_field='label', codelist="language",mappings_folder=mappings_folder + "/ckan_geodcatap") %}
+    {% set languages = record|get_languages_from_dataset() %}
+    {% set language_alternate = language_2code|get_language_alternate(languages) %}
     {% set dcat_type = record['dcat_type'].rsplit('/', 1)[-1] %}
     "mcf": {"version": 1.0},
     "metadata": {
@@ -9,7 +13,10 @@
         {% else %}
             "identifier": "{{ record['id'] }}",
         {% endif %}
-        "language": "{{ language }}",
+        "language": "{{ language_2code }}",
+        {% if language_alternate %}
+            "language_alternate": "{{ language_alternate }}",
+        {% endif %}
         "charset": "UTF-8",
         {% if record['source'] %}
             "parentidentifier": "{{ record['source'].rsplit('/', 1)[-1] }}",
@@ -69,11 +76,31 @@
         {% endif %}
     },
     "identification": {
-        "language": "{{ language }}",
-        "languagelabel": "{{ language|get_mapping_value_from_yaml_list(input_field="value", output_field='label', codelist="language",mappings_folder=mappings_folder + "/ckan_geodcatap")}}",
+        "language": "{{ language_iso19115 }}",
+        "languagelabel": "{{ language_label }}",
         "charset": "utf8",
-        "title": "{{ record['title']|safe }}",
-        "abstract": "{{ record['notes']|safe }}",
+        {% set title_translated = record['title_translated']|get_localized_dataset_value(language_2code, languages) %}
+        {% if title_translated is iterable and title_translated %}
+                "title": {
+                    {% for lang, value in title_translated.items() %}
+                        "{{ lang }}": "{{ value }}"
+                    {% if not loop.last %},{% endif %}
+                    {% endfor %}
+                },
+        {% else %}
+            "title": "{{ record['title']|safe }}",
+        {% endif %}
+        {% set notes_translated = record['notes_translated']|get_localized_dataset_value(language_2code, languages) %}
+        {% if notes_translated is iterable and notes_translated %}
+                "abstract": {
+                    {% for lang, value in notes_translated.items() %}
+                        "{{ lang }}": "{{ value }}"
+                    {% if not loop.last %},{% endif %}
+                    {% endfor %}
+                },
+        {% else %}
+            "abstract": "{{ record['notes']|safe }}",
+        {% endif %}
         {% if record['graphic_overview'] %}
             "browsegraphic": "{{ record['graphic_overview'] }}",
         {% endif %}
@@ -380,8 +407,8 @@
                     {% endfor %}
                     ],
             {% endif %}
-            {% if record['lineage_statement'] %}
-                "statement": "{{ record['provenance']|safe }}"
+            {% if record['provenance'] %}
+                "statement": "{{ record['provenance']|get_localized_dataset_value(language_2code, languages, true) }}"
             {% else %}
                 "statement": "No lineage statement provided"
             {% endif %}
