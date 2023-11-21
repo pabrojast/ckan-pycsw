@@ -1,7 +1,7 @@
 -
    theme: http://inspire.ec.europa.eu/theme/ac
    dcat_ap: http://publications.europa.eu/resource/authority/data-theme/ENVI
-   label: Atmospheric Conditions
+   label: Atmospheric conditions
    language: en
 -
    theme: http://inspire.ec.europa.eu/theme/ad
@@ -11,7 +11,7 @@
 -
    theme: http://inspire.ec.europa.eu/theme/af
    dcat_ap: http://publications.europa.eu/resource/authority/data-theme/AGRI
-   label: Agricultural and Aquaculture Facilities
+   label: Agricultural and aquaculture facilities
    language: en
 -
    theme: http://inspire.ec.europa.eu/theme/am
@@ -46,7 +46,7 @@
 -
    theme: http://inspire.ec.europa.eu/theme/ef
    dcat_ap: http://publications.europa.eu/resource/authority/data-theme/ENVI
-   label: Environmental Monitoring Facilities
+   label: Environmental monitoring facilities
    language: en
 -
    theme: http://inspire.ec.europa.eu/theme/el
@@ -56,7 +56,7 @@
 -
    theme: http://inspire.ec.europa.eu/theme/er
    dcat_ap: http://publications.europa.eu/resource/authority/data-theme/ENER
-   label: Natural resources
+   label: Energy resources
    language: en
 -
    theme: http://inspire.ec.europa.eu/theme/ge
@@ -71,7 +71,7 @@
 -
    theme: http://inspire.ec.europa.eu/theme/gg
    dcat_ap: http://publications.europa.eu/resource/authority/data-theme/REGI
-   label: Geographical Grid Systems
+   label: Geographical grid systems
    language: en
 -
    theme: http://inspire.ec.europa.eu/theme/gn
@@ -81,7 +81,7 @@
 -
    theme: http://inspire.ec.europa.eu/theme/hb
    dcat_ap: http://publications.europa.eu/resource/authority/data-theme/ENVI
-   label: Habitats and Biotopes
+   label: Habitats and biotopes
    language: en
 -
    theme: http://inspire.ec.europa.eu/theme/hh
@@ -146,7 +146,7 @@
 -
    theme: http://inspire.ec.europa.eu/theme/of
    dcat_ap: http://publications.europa.eu/resource/authority/data-theme/ENVI
-   label: Oceanographic Geographical Features
+   label: Oceanographic geographical features
    language: en
 -
    theme: http://inspire.ec.europa.eu/theme/oi
@@ -166,7 +166,7 @@
 -
    theme: http://inspire.ec.europa.eu/theme/pf
    dcat_ap: http://publications.europa.eu/resource/authority/data-theme/ECON
-   label: Production and Industrial Facilities
+   label: Production and industrial facilities
    language: en
 -
    theme: http://inspire.ec.europa.eu/theme/ps
@@ -176,7 +176,7 @@
 -
    theme: http://inspire.ec.europa.eu/theme/rs
    dcat_ap: http://publications.europa.eu/resource/authority/data-theme/REGI
-   label: Coordinate Reference Systems
+   label: Coordinate reference systems
    language: en
 -
    theme: http://inspire.ec.europa.eu/theme/sd

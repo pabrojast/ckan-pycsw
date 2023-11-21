@@ -26,6 +26,7 @@ SCHEMAS_CKAN = pathlib.Path(__file__).resolve().parent.parent / 'schemas/ckan'
 SCHEMAS_PYGEOMETA = pathlib.Path(__file__).resolve().parent.parent / 'schemas/pygeometa'
 MAPPINGS = pathlib.Path(__file__).resolve().parent.parent / 'mappings'
 VERSION = pkg_resources.require('pygeometa')[0].version
+DEFAULT_LABEL_LANG = 'en'
 
 # Custom exceptions.
 class MappingValueNotFoundError(Exception):
@@ -72,6 +73,9 @@ def render_j2_template(mcf: dict, schema_type: str, url: str = None, template_di
         'prune_distribution_formats': prune_distribution_formats,
         'prune_transfer_option': prune_transfer_option,
         'escape_json': escape_json,
+        'get_languages_from_dataset': get_languages_from_dataset,
+        'get_language_alternate': get_language_alternate,
+        'get_localized_dataset_value': get_localized_dataset_value,
     }
 
     LOGGER.debug('Evaluating template directory')
@@ -100,6 +104,7 @@ def render_j2_template(mcf: dict, schema_type: str, url: str = None, template_di
         env.globals.update(url=url)
         env.globals.update(mappings_folder=mappings_folder)
         env.globals.update(zip=zip)
+        env.globals.update(default_label_lang=DEFAULT_LABEL_LANG)
         env.globals.update(FILTERS)
 
         try:
@@ -116,7 +121,7 @@ def render_j2_template(mcf: dict, schema_type: str, url: str = None, template_di
         mcf_dict = json.loads(template.render(record=mcf), strict=False)
 
         #TODO: Delete Dumps to log
-        #print(json.dumps(mcf_dict, indent=4, ensure_ascii=False), file=open(APP_DIR + '/log/demo_ckan.json', 'w', encoding='utf-8'))
+        # print(json.dumps(mcf_dict, indent=4, ensure_ascii=False), file=open(APP_DIR + '/log/demo_ckan.json', 'w', encoding='utf-8'))
 
         return mcf_dict
 
@@ -125,18 +130,21 @@ def render_j2_template(mcf: dict, schema_type: str, url: str = None, template_di
         env = Environment(loader=FileSystemLoader(os.path.join(SCHEMAS_PYGEOMETA, template_dir)))
     
         LOGGER.debug('Adding template filters')
+        env.globals.update(default_label_lang=DEFAULT_LABEL_LANG)
         env.filters['normalize_datestring'] = normalize_datestring
         env.filters['normalize_charstring'] = normalize_charstring
         env.filters['get_distribution_language'] = get_distribution_language
         env.filters['get_charstring'] = get_charstring
         env.filters['prune_distribution_formats'] = prune_distribution_formats
         env.filters['prune_transfer_option'] = prune_transfer_option
+        env.filters['get_mapping_value_from_yaml_list'] = get_mapping_value_from_yaml_list
         env.globals.update(zip=zip)
         env.globals.update(mappings_folder=mappings_folder)
         env.globals.update(get_charstring=get_charstring)
         env.globals.update(normalize_datestring=normalize_datestring)
         env.globals.update(prune_distribution_formats=prune_distribution_formats)
         env.globals.update(prune_transfer_option=prune_transfer_option)
+        env.globals.update(get_mapping_value_from_yaml_list=get_mapping_value_from_yaml_list)
 
         try:
             LOGGER.debug('Loading template')
@@ -653,3 +661,91 @@ def escape_json(value):
     :returns: A string representing the escaped value for use in JSON.
     """
     return json.dumps(value).replace('\\', '\\\\').replace('"', '\\"')
+
+def get_languages_from_dataset(mcf):
+    # Verificar si el valor es un diccionario
+    if isinstance(mcf, dict):
+        # Utilizar una lista para almacenar todas las claves encontradas
+        languages = []
+
+        # Verificar si 'title_translated' existe en el diccionario
+        if 'title_translated' in mcf and isinstance(mcf['title_translated'], dict):
+            # Si existe, recorrer las claves de 'title_translated' y agregarlas a la lista
+            for lang in mcf['title_translated'].keys():
+                languages.append(lang)
+        return languages
+    else:
+        # Si no es un diccionario, devolver una lista vacía
+        return None
+
+def get_language_alternate(default_language, languages=None):
+    """
+    Get the alternate language from a list of languages, excluding duplicates, and return it.
+    
+    :param default_language (str): The default language.
+    :param languages (list): A list of language codes.
+
+    :returns: str or None: The alternate language code, or None if no alternate language is found.
+    """
+    # Check if a list of languages was not provided
+    if languages is None or not isinstance(languages, list):
+        return None
+
+    # Create a set to store unique languages
+    unique_languages = set()
+
+    # Initialize the alternate language as None
+    language_alternate = None
+
+    for language in languages:
+        # Check if the language is unique
+        if language not in unique_languages:
+            unique_languages.add(language)
+            # If it is different from the default language, set it as the alternate language
+            if language != default_language:
+                language_alternate = language
+
+    return language_alternate
+
+def get_localized_dataset_value(multilang_value, default_language, languages=None, only_default=False):
+    """
+    Extract a localized dataset value based on the provided language list.
+
+    Args:
+        multilang_value (dict or str): The dataset value, typically containing language-specific data.
+        languages (list, optional): A list of language codes. If provided, the output dictionary
+            will only contain keys for the specified languages.
+        only_default (bool, optional): If True, return only the default language value as a string.
+
+    Returns:
+        dict or str: A dictionary with key-value pairs for the specified languages, with the default
+            language as the first key, or a string if only_default is True.
+    """
+    if isinstance(multilang_value, str):
+        return multilang_value
+
+    # Check if the multilang_value is a dictionary
+    if not isinstance(multilang_value, dict):
+        return None
+
+    # If no language list is provided, return the entire multilang_value
+    if languages is None:
+        return None
+
+    # If only_default is True, return the default language value as a string
+    if only_default:
+        return multilang_value.get(default_language, "")
+
+    # Create a dictionary for the output, containing only specified languages
+    localized_value = {}
+
+    # Put the default language in the output dictionary
+    if default_language in multilang_value:
+        localized_value[default_language] = multilang_value[default_language]
+
+    # Iterate through the remaining languages and extract matching keys from the multilang_value
+    for language in languages[1:]:
+        if language in multilang_value:
+            localized_value[language] = multilang_value[language]
+
+    return localized_value

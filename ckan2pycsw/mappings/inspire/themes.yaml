@@ -1,136 +1,170 @@
 -
    uri: http://inspire.ec.europa.eu/theme/mf
-   label: Meteorological Geographical Features (MF)
+   label: Meteorological Geographical Features
+   code: MF
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/climatologyMeteorologyAtmosphere
 -
    uri: http://inspire.ec.europa.eu/theme/ac
-   label: Atmospheric Conditions (AC)
+   label: Atmospheric conditions
+   code: AF
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/climatologyMeteorologyAtmosphere
 -
    uri: http://inspire.ec.europa.eu/theme/lc
-   label: Land Cover (LC)
+   label: Land Cover
+   code: LC
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/imageryBaseMapsEarthCover
 -
    uri: http://inspire.ec.europa.eu/theme/ad
-   label: Addresses (AD)
+   label: Addresses
+   code: AD
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/location
 -
    uri: http://inspire.ec.europa.eu/theme/pd
-   label: Population distribution — demography (PD)
+   label: Population distribution — demography
+   code: PD
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/society
 -
    uri: http://inspire.ec.europa.eu/theme/sd
-   label: Species distribution (SD)
+   label: Species distribution
+   code: SD
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/biota
 -
    uri: http://inspire.ec.europa.eu/theme/bu
-   label: Buildings (BU)
+   label: Buildings
+   code: BU
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/structure
 -
    uri: http://inspire.ec.europa.eu/theme/el
-   label: Elevations (EL)
+   label: Elevations
+   code: EL
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/elevation
 -
    uri: http://inspire.ec.europa.eu/theme/ge
-   label: Geology (GE)
+   label: Geology
+   code: GE
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/geoscientificInformation
 -
    uri: http://inspire.ec.europa.eu/theme/hy
-   label: Hydrography (HY)
+   label: Hydrography
+   code: HY
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/inlandWaters
 -
    uri: http://inspire.ec.europa.eu/theme/hb
-   label: Habitats and Biotopes (HB)
+   label: Habitats and Biotopes
+   code: HB
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/biota
 -
    uri: http://inspire.ec.europa.eu/theme/af
-   label: Agricultural and Aquaculture Facilities (AF)
+   label: Agricultural and aquaculture facilities
+   code: AF
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/farming
 -
    uri: http://inspire.ec.europa.eu/theme/ef
-   label: Environmental Monitoring Facilities (EF)
+   label: Environmental monitoring facilities
+   code: EF
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/structure
 -
    uri: http://inspire.ec.europa.eu/theme/pf
-   label: Production and Industrial Facilities (PF)
+   label: Production and industrial facilities
+   code: PF
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/structure
 -
    uri: http://inspire.ec.europa.eu/theme/ps
-   label: Protected sites (PS)
+   label: Protected sites
+   code: PS
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/environment
 -
    uri: http://inspire.ec.europa.eu/theme/gn
-   label: Geographical names (GN)
+   label: Geographical names
+   code: GN
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/location
 -
    uri: http://inspire.ec.europa.eu/theme/oi
-   label: Orthoimagery (OI)
+   label: Orthoimagery
+   code: OI
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/imageryBaseMapsEarthCover
 -
    uri: http://inspire.ec.europa.eu/theme/cp
-   label: Cadastral parcels (CP)
+   label: Cadastral parcels
+   code: CP
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/planningCadastre
 -
    uri: http://inspire.ec.europa.eu/theme/of
-   label: Oceanographic Geographical Features (OF)
+   label: Oceanographic geographical features
+   code: OF
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/oceans
 -
    uri: http://inspire.ec.europa.eu/theme/er
-   label: Natural resources (ER)
+   label: Energy resources
+   code: ER
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/economy
 -
    uri: http://inspire.ec.europa.eu/theme/mr
-   label: Mineral resources (MR)
+   label: Mineral resources
+   code: MR
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/economy
 -
    uri: http://inspire.ec.europa.eu/theme/tn
-   label: Transport networks (TN)
+   label: Transport networks
+   code: TN
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/transportation
 -
    uri: http://inspire.ec.europa.eu/theme/br
-   label: Bio-geographical regions (BR)
+   label: Bio-geographical regions
+   code: BR
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/biota
 -
    uri: http://inspire.ec.europa.eu/theme/sr
-   label: Sea regions (BR)
+   label: Sea regions
+   code: SR
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/oceans
 -
    uri: http://inspire.ec.europa.eu/theme/hh
-   label: Human health and safety (HH)
+   label: Human health and safety
+   code: HH
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/health
 -
    uri: http://inspire.ec.europa.eu/theme/us
-   label: Utility and governmental services (US)
+   label: Utility and governmental services
+   code: US
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/utilitiesCommunication
 -
    uri: http://inspire.ec.europa.eu/theme/gg
-   label: Geographical Grid Systems (GG)
+   label: Geographical grid systems
+   code: GG
    topic_category: -
 -
    uri: http://inspire.ec.europa.eu/theme/rs
-   label: Coordinate Reference Systems (RS)
+   label: Coordinate reference systems
+   code: RS
    topic_category: -
 -
    uri: http://inspire.ec.europa.eu/theme/so
-   label: Soil (SO)
+   label: Soil
+   code: SO
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/geoscientificInformation
 -
    uri: http://inspire.ec.europa.eu/theme/au
-   label: Administrative units (SO)
+   label: Administrative units
+   code: AU
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/boundaries
 -
    uri: http://inspire.ec.europa.eu/theme/su
-   label: Statistical units (SU)
+   label: Statistical units
+   code: SU
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/boundaries
 -
    uri: http://inspire.ec.europa.eu/theme/lu
-   label: Land use (LU)
+   label: Land use
+   code: LU
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/planningCadastre
 -
    uri: http://inspire.ec.europa.eu/theme/nz
-   label: Natural risk zones (NZ)
+   label: Natural risk zones
+   code: NZ
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/geoscientificInformation
 -
    uri: http://inspire.ec.europa.eu/theme/am
-   label: Area Management/Restriction/Regulation Zones and Reporting Units (AM)
+   label: Area management/restriction/regulation zones and reporting units
+   code: AM
    topic_category: http://inspire.ec.europa.eu/metadata-codelist/TopicCategory/planningCadastre

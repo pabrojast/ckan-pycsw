@@ -1,0 +1,10 @@
+    <gmd:locale>
+      <gmd:PT_Locale id="{{ record['metadata']['language'].upper() }}">
+        <gmd:languageCode>
+          <gmd:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeSpace="ISO 639-2" codeListValue="{{ record['metadata']['language']|get_mapping_value_from_yaml_list(input_field="iso_639_1", output_field='iso_639_2', codelist="language",mappings_folder=mappings_folder + "/ckan_geodcatap") }}">{{ record['metadata']['language']|get_mapping_value_from_yaml_list(input_field="iso_639_1", output_field='label', codelist="language",mappings_folder=mappings_folder + "/ckan_geodcatap") }}</gmd:LanguageCode>
+        </gmd:languageCode>
+        <gmd:characterEncoding>
+          <gmd:MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeSpace="ISOTC211/19115" codeListValue="{{ record['metadata']['charset'] }}">{{ record['metadata']['charset'] }}</gmd:MD_CharacterSetCode>
+        </gmd:characterEncoding>
+      </gmd:PT_Locale>
+    </gmd:locale>

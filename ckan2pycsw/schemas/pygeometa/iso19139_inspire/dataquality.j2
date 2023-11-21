@@ -1,0 +1,47 @@
+ <gmd:dataQualityInfo>
+    <gmd:DQ_DataQuality>
+      <gmd:scope>
+        <gmd:DQ_Scope>
+          <gmd:level>
+            <gmd:MD_ScopeCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ScopeCode"
+              codeListValue="{{ dataquality['scope']['level'] }}">{{ dataquality['scope']['level']|capitalize }}</gmd:MD_ScopeCode>
+          </gmd:level>
+          {% if resource_type == 'service' %}
+            <gmd:levelDescription>
+              <gmd:MD_ScopeDescription>
+              <gmd:other>
+              <gco:CharacterString>Service</gco:CharacterString>
+              </gmd:other>
+              </gmd:MD_ScopeDescription>
+            </gmd:levelDescription>
+          {% endif %}
+        </gmd:DQ_Scope>
+      </gmd:scope>
+      {{ report.get_report_text(record['metadata']['language'], resource_type) }}
+      <gmd:lineage>
+        <gmd:LI_Lineage>
+          {% if dataquality['lineage'].get('statement') %}
+            {{ cs.get_freetext('statement', record['metadata']['language_alternate'], get_charstring(dataquality['lineage'].get('statement'), record['metadata']['language'], record['metadata']['language_alternate'])) }}
+          {% endif %}
+          {% if dataquality['lineage'].get('processstep') %}
+            {% for lineage_step in dataquality['lineage'].get('processstep') %}
+            <gmd:processStep>
+              <gmd:LI_ProcessStep>
+              {{ cs.get_freetext('description', record['metadata']['language_alternate'], get_charstring(lineage_step['description'], record['metadata']['language'], record['metadata']['language_alternate'])) }}
+              </gmd:LI_ProcessStep>
+            </gmd:processStep>
+            {% endfor %}
+          {% endif %}
+          {% if dataquality['lineage'].get('source') %}
+            {% for lineage_source in dataquality['lineage'].get('source') %}
+            <gmd:source>
+              <gmd:LI_Source>
+              {{ cs.get_freetext('description', record['metadata']['language_alternate'], get_charstring(lineage_source['description'], record['metadata']['language'], record['metadata']['language_alternate'])) }}
+              </gmd:LI_Source>
+            </gmd:source>
+            {% endfor %}
+          {% endif %}
+        </gmd:LI_Lineage>
+      </gmd:lineage>
+    </gmd:DQ_DataQuality>
+  </gmd:dataQualityInfo>
