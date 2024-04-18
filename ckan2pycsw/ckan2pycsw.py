@@ -46,7 +46,7 @@ APP_DIR = os.environ.get("APP_DIR", "/app")
 CKAN_API = "api/3/action/package_search"
 PYCSW_CKAN_SCHEMA = os.environ.get("PYCSW_CKAN_SCHEMA", "iso19139_geodcatap")
 PYCSW_OUPUT_SCHEMA = os.environ.get("PYCSW_OUPUT_SCHEMA", "iso19139_inspire")
-DEV_MODE = os.environ.get("DEV_MODE", None)
+DEV_MODE = os.environ.get("DEV_MODE", False)
 PYCSW_CONF = f"{APP_DIR}/pycsw.conf.template" if DEV_MODE == "True" else "pycsw.conf"
 MAPPINGS_FOLDER = "ckan2pycsw/mappings"
 log_module = "[ckan2pycsw]"
@@ -215,7 +215,7 @@ def run_tasks():
         logging.error(f"{log_module}:ckan2pycsw | Error starting gunicorn: {e}")
 
 if __name__ == "__main__":
-    if DEV_MODE == True or DEV_MODE.lower() == "true":
+    if str(DEV_MODE).lower() == "true":
         # Allow other computers to attach to ptvsd at this IP address and port.
         ptvsd.enable_attach(address=("0.0.0.0", PYCSW_DEV_PORT), redirect_output=True)
 
