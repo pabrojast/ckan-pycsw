@@ -85,27 +85,38 @@ docker compose up -d --build
 
 
 ### Without Docker
+Requirements:
+- `>=` [Python 3.9](./pyproject.toml)
+
 Dependencies:
 ```bash
 python3 -m pip install --user pipx
+python3 -m pipx ensurepath --force
+
+# You will need to open a new terminal or re-login for the PATH changes to take effect.
 pipx install pdm
-pdm install --no-self
+pdm install --no-self --group prod
 ```
 
 Configuration:
 ```bash
 PYCSW_URL=http://localhost:8000 envsubst < ckan-pycsw/conf/pycsw.conf.template > pycsw.conf
+
+# Or update pycsw.conf vars manually
+vi pycsw.conf
 ```
 
-Generate database:
+Generate database and add:
 ```bash
 rm -f cite.db
-CKAN_URL=http://localhost:5000 pdm run python3 ckan2pycsw/ckan2pycsw.py
+
+# Remember create and update .env vars. Next add to .env environment:
+bash doc/scripts/00_ennvars.sh
 ```
 
-Run:
+Run ckan2pycsw:
 ```bash
-PYCSW_CONFIG=pycsw.conf pdm run python -m pycsw.wsgi
+PYCSW_CONFIG=pycsw.conf pdm run python3 ckan2pycsw/ckan2pycsw.py
 ```
 
 ## Schema development

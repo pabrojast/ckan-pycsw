@@ -10,3 +10,4 @@ metadata/*
 !metadata/README.md
 samples
 .env
+.pdm-python
