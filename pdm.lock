@@ -129,7 +129,7 @@ summary = "Safely add untrusted strings to HTML/XML markup."
 [[package]]
 name = "numpy"
 version = "1.24.1"
-requires_python = ">=3.8"
+requires_python = ">=3.9"
 summary = "Fundamental package for array computing in Python"
 
 [[package]]
@@ -191,7 +191,7 @@ dependencies = [
 [[package]]
 name = "pyproj"
 version = "3.4.1"
-requires_python = ">=3.8"
+requires_python = ">=3.9"
 summary = "Python interface to PROJ (cartographic projections and coordinate transformations library)"
 dependencies = [
     "certifi",
