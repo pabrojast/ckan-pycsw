@@ -118,10 +118,14 @@ def render_j2_template(mcf: dict, schema_type: str, url: str = None, template_di
         LOGGER.debug('Processing CKAN template to JSON')
         mcf = update_object_lists(mcf)
 
-        mcf_dict = json.loads(template.render(record=mcf), strict=False)
-
-        #TODO: Delete Dumps to log
-        # print(json.dumps(mcf_dict, indent=4, ensure_ascii=False), file=open(APP_DIR + '/log/demo_ckan.json', 'w', encoding='utf-8'))
+        try:
+            # Render the template and directly attempt to correct and deserialize the JSON string
+            mcf_dict = json.loads(re.sub(r'\\(?!["\\/bfnrtu])', r'\\\\', template.render(record=mcf)), strict=False)
+        except json.JSONDecodeError as e:
+            LOGGER.error("Error deserializing the template output: %s", e)
+            # Optionally: Save the problematic output for debugging
+            LOGGER.error("Problematic output: %s", template.render(record=mcf))
+            raise
 
         return mcf_dict
 

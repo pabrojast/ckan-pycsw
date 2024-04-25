@@ -74,18 +74,28 @@ def get_datasets(base_url):
     """
     try:
         if not base_url.endswith("/"):
-                base_url += "/"
-        package_search = urljoin(base_url, CKAN_API)
+            base_url += "/"
+        package_search = urljoin(base_url, "api/3/action/package_search")
         res = requests.get(package_search, params={"rows": 0})
-        end = res.json()["result"]["count"]
+        res.raise_for_status()  # Raises a HTTPError if the response is not 200
+        end = res.json().get("result", {}).get("count", 0)
         rows = 10
         for start in range(0, end, rows):
             res = requests.get(package_search, params={"start": start, "rows": rows})
-            for dataset in res.json()["result"]["results"]:
-                if dataset["type"] == "dataset":
+            res.raise_for_status()  # Check response status
+            try:
+                datasets = res.json()["result"]["results"]
+            except ValueError as e:  # Catch JSON decode error
+                logging.error(f"Error decoding JSON from response: {e}")
+                continue  # Skip to the next iteration
+
+            for dataset in datasets:
+                if dataset.get("type") == "dataset":
                     yield dataset
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Request error while communicating with CKAN instance {base_url}: {e}")
     except Exception as e:
-        logging.error(f"{log_module}:ckan2pycsw | No metadata in CKAN: {base_url} | Error: {e}")
+        logging.error(f"Unexpected error: {e}")
 
 def main():
     """
