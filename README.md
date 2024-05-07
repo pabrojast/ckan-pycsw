@@ -18,7 +18,7 @@
 ## Overview
 Docker compose environment (based on [pycsw](https://github.com/geopython/pycsw)) for development and testing with CKAN Open Data portals.[^1]
 
->**Note**<br>
+> [!NOTE]
 > It can be easily tested with a CKAN-type Open Data portal deployment: [mjanez/ckan-docker](https://github.com/mjanez/ckan-docker)[^2].
 
 Available components:
@@ -48,7 +48,7 @@ Select the CKAN Schema (`PYCSW_CKAN_SCHEMA`), and the pycsw output schema (`PYCS
     * `iso19139_inspire`, **default**: Customised schema based on ISO 19139 INSPIRE metadata schema.
     * `iso19139`: Standard pycsw schema based on ISO 19139.
 
->**Note**<br>
+> [!NOTE]
 > The output pycsw schema (`iso19139_inspire`), to comply with INSPIRE ISO 19139 is WIP. The validation of the dataset/series is complete and conforms to the [INSPIRE reference validator](https://inspire.ec.europa.eu/validator/home/index.html) datasets and dataset series (Conformance Class 1, 2, 2b and 2c). In contrast, spatial data services still fail in only 1 dimension [WIP]. 
 
 To deploy the environment, `docker compose` will build the latest source in the repo.
@@ -68,7 +68,7 @@ docker compose -f docker-compose.ghcr.yml --build
 docker compose up -d --build
 ```
 
->**Note**:<br>
+> [!NOTE]
 > Deploy the dev (multistage build) `docker-compose.dev.yml` with:
 >
 >```bash
@@ -76,7 +76,7 @@ docker compose up -d --build
 >```
 
 
->**Note**:<br>
+> [!NOTE]
 >If needed, to build a specific container simply run:
 >
 >```bash
@@ -244,7 +244,7 @@ Perform a `GetRecords` request and return all:
 2. Open [`ckan2pycsw.py`](/ckan2pycsw/ckan2pycsw.py).
 3. Start debugging on `ckan2pycsw.py` Python file (`Debug the currently active Python file`). 
 
->**Note**<br>
+> [!NOTE]
 > By default, the Python extension looks for and loads a file named `.env` in the current workspace folder. More info about Python debugger and [Enviromental variables use](https://code.visualstudio.com/docs/python/environments#_environment-variables).
 
 ## Containers
@@ -264,7 +264,7 @@ List of *containers*:
 | mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:latest` | 175 MB |  Dev & Test latest version. |
 | mjanez/ckan-pycsw| custom image | `mjanez/ckan-pycsw:main` | 175 MB |  Stable version. |
 
->**Note**<br>
+> [!NOTE]
 > GHCR and Dev `Dockerfiles` using `main` images as base.
 
 ### Network ports settings
