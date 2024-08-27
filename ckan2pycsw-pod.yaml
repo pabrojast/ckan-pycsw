@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: ckan  
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose-resolved.yaml
+    kompose.version: 1.34.0 (cbf2835db)
+  labels:
+    io.kompose.service: ckan2pycsw
+  name: ckan2pycsw
+spec:
+  containers:
+    - env:
+        - name: APP_DIR
+          value: /app
+        - name: CKAN_URL
+          value: http://data.dev-wins.com/
+        - name: CONTAINER_OS
+          value: rhel
+        - name: CONTAINER_OS_NAME
+          value: rhel-test
+        - name: CONTAINER_OS_VERSION
+          value: "9"
+        - name: PYCSW_CKAN_SCHEMA
+          value: iso19139_geodcatap
+        - name: PYCSW_CONFIG
+          value: /app/pycsw.conf
+        - name: PYCSW_CRON_DAYS_INTERVAL
+          value: "2"
+        - name: PYCSW_CRON_HOUR_START
+          value: "4"
+        - name: PYCSW_DEV_PORT
+          value: "5678"
+        - name: PYCSW_HOST_PORT
+          value: "8000"
+        - name: PYCSW_OUPUT_SCHEMA
+          value: iso19139_inspire
+        - name: PYCSW_PORT
+          value: "8000"
+        - name: PYCSW_URL
+          value: http://localhost:8000/pycsw/csw.py
+        - name: SSH_HOST_PORT
+          value: "2222"
+        - name: SSH_PORT
+          value: "22"
+        - name: TZ
+          value: UTC
+        - name: TIMEOUT
+          value: "5000"
+      image: pabrojast/ckan-pycsw:latest
+      livenessProbe:
+        exec:
+          command:
+            - wget
+            - -qO
+            - /dev/null
+            - http://localhost:8000
+        initialDelaySeconds: 600
+      readinessProbe:
+        exec:
+          command:
+            - wget
+            - -qO
+            - /dev/null
+            - http://localhost:8000
+        initialDelaySeconds: 5  # Añade un delay de 5 segundos antes de que comience el readinessProbe
+      name: ckan-pycsw
+      ports:
+        - containerPort: 8000
+          protocol: TCP
+      volumeMounts:
+        - mountPath: /app/log
+          name: log-storage
+          readOnly: false  # Asegura que este volumen no se monte en modo solo lectura
+        - mountPath: /app/metadata
+          name: metadata-storage
+          readOnly: false  # Asegura que este volumen no se monte en modo solo lectura
+  restartPolicy: Always
+  volumes:
+    - name: log-storage
+      persistentVolumeClaim:
+        claimName: ckan2pycsw-pvc-log
+    - name: metadata-storage
+      persistentVolumeClaim:
+        claimName: ckan2pycsw-pvc

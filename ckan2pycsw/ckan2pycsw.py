@@ -90,6 +90,9 @@ def get_datasets(base_url):
                 continue  # Skip to the next iteration
 
             for dataset in datasets:
+                if "dcat_type" not in dataset:
+                    dataset["dcat_type"] = "http://inspire.ec.europa.eu/metadata-codelist/ResourceType/dataset"
+                
                 if dataset.get("type") == "dataset":
                     yield dataset
     except requests.exceptions.RequestException as e:
@@ -147,7 +150,7 @@ def main():
     # Only iterate over dataset if dataset["dcat_type"] in dcat_type
     for dataset in (d for d in get_datasets(URL) if d["dcat_type"].rsplit("/", 1)[-1] in dcat_type):
                 # Add a counter of errors and valids datasets
-
+                print(d)
                 d_dcat_type = dataset["dcat_type"].rsplit("/", 1)[-1]
                 logging.info(f"{log_module}:ckan2pycsw | Metadata: {dataset['name']} [DCAT Type: {d_dcat_type.capitalize()}]")
                 try:

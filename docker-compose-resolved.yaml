@@ -1,0 +1,60 @@
+name: ckan-pycsw
+services:
+  ckan2pycsw:
+    build:
+      context: /root/ckan-pycsw
+      dockerfile: ckan-pycsw/Dockerfile
+    container_name: ckan-pycsw
+    environment:
+      APP_DIR: /app
+      CKAN_URL: http://localhost:5000/
+      CONTAINER_OS: rhel
+      CONTAINER_OS_NAME: rhel-test
+      CONTAINER_OS_VERSION: "9"
+      PYCSW_CKAN_SCHEMA: iso19139_geodcatap
+      PYCSW_CONFIG: /app/pycsw.conf
+      PYCSW_CRON_DAYS_INTERVAL: "2"
+      PYCSW_CRON_HOUR_START: "4"
+      PYCSW_DEV_PORT: "5678"
+      PYCSW_HOST_PORT: "8000"
+      PYCSW_OUPUT_SCHEMA: iso19139_inspire
+      PYCSW_PORT: "8000"
+      PYCSW_URL: http://localhost:8000/pycsw/csw.py
+      SSH_HOST_PORT: "2222"
+      SSH_PORT: "22"
+      TZ: UTC
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - -qO
+        - /dev/null
+        - http://localhost:8000
+    logging:
+      driver: json-file
+      options:
+        max-file: "10"
+        max-size: 100m
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        host_ip: 0.0.0.0
+        target: 8000
+        published: "8000"
+        protocol: tcp
+    restart: on-failure
+    volumes:
+      - type: bind
+        source: /root/ckan-pycsw/log
+        target: /app/log
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /root/ckan-pycsw/metadata
+        target: /app/metadata
+        bind:
+          create_host_path: true
+networks:
+  default:
+    name: ckan2pycsw_default

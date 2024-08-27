@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: ckan2pycsw
+  name: ckan2pycsw-cm1
+data: {}
