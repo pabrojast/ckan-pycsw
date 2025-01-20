@@ -6,7 +6,7 @@ metadata:
     kompose.cmd: kompose convert -f docker-compose-resolved.yaml
     kompose.version: 1.34.0 (cbf2835db)
   labels:
-    io.kompose.service: ckan2pycsw
+    app: ckan2pycsw
   name: ckan2pycsw
 spec:
   ports:
@@ -15,4 +15,4 @@ spec:
       targetPort: 8000
   type: NodePort
   selector:
-    io.kompose.service: ckan2pycsw
+    app: ckan2pycsw
