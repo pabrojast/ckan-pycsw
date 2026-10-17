@@ -1,0 +1,25 @@
+name: Converter regressions
+
+on:
+  push:
+    branches: [main, 'fix/**']
+    paths: ['ckan2pycsw/**', 'tests/**', 'docker/production/**', '.github/workflows/converter-tests.yaml']
+  pull_request:
+    paths: ['ckan2pycsw/**', 'tests/**', 'docker/production/**', '.github/workflows/converter-tests.yaml']
+
+permissions:
+  contents: read
+
+jobs:
+  regressions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build with production dependencies
+        run: docker build -f docker/production/Dockerfile --build-arg REVISION="$GITHUB_SHA" -t converter-tests .
+      - name: Test conversion and safe refresh without network access
+        run: |
+          docker run --rm --network none -v "$PWD/tests:/app/tests:ro" \
+            --entrypoint /app/.venv/bin/python converter-tests \
+            -m unittest discover -s /app/tests -v

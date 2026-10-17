@@ -6,7 +6,11 @@ from urllib.parse import urljoin
 import os
 from datetime import datetime, time
 import subprocess
-import time
+import signal
+import sys
+import tempfile
+import sqlite3
+from sqlalchemy.engine.url import make_url
 
 # third-party libraries
 import psutil
@@ -72,118 +76,104 @@ def get_datasets(base_url):
     ------
     requests.exceptions.RequestException: If an error occurs while communicating with the CKAN instance.
     """
-    try:
-        if not base_url.endswith("/"):
-            base_url += "/"
-        package_search = urljoin(base_url, "api/3/action/package_search")
-        res = requests.get(package_search, params={"rows": 0})
-        res.raise_for_status()  # Raises a HTTPError if the response is not 200
-        end = res.json().get("result", {}).get("count", 0)
-        rows = 10
-        for start in range(0, end, rows):
-            res = requests.get(package_search, params={"start": start, "rows": rows})
-            res.raise_for_status()  # Check response status
-            try:
-                datasets = res.json()["result"]["results"]
-            except ValueError as e:  # Catch JSON decode error
-                logging.error(f"Error decoding JSON from response: {e}")
-                continue  # Skip to the next iteration
+    package_search = urljoin(base_url.rstrip('/') + '/', CKAN_API)
+    seen = set()
+    start = 0
+    total = None
+    while total is None or start < total:
+        response = requests.get(package_search, params={
+            "start": start, "rows": 100, "sort": "id asc"
+        }, timeout=(10, 120))
+        response.raise_for_status()
+        body = response.json()
+        if body.get("success") is not True:
+            raise RuntimeError("CKAN package_search failed")
+        result = body["result"]
+        if total is not None and result["count"] != total:
+            raise RuntimeError("CKAN catalogue changed during harvest; retaining previous catalogue")
+        total = result["count"]
+        datasets = result["results"]
+        if not datasets and start < total:
+            raise RuntimeError("CKAN returned an incomplete page")
+        for dataset in datasets:
+            if dataset["id"] in seen:
+                raise RuntimeError("CKAN returned a duplicate dataset during pagination")
+            seen.add(dataset["id"])
+            if dataset.get("private"):
+                raise RuntimeError("Refusing to publish a private dataset")
+            if dataset.get("type") == "dataset":
+                dataset["dcat_type"] = dataset.get("dcat_type") or "http://inspire.ec.europa.eu/metadata-codelist/ResourceType/dataset"
+                yield dataset
+        start += len(datasets)
+    if len(seen) != total:
+        raise RuntimeError("CKAN catalogue count does not match harvested records")
 
-            for dataset in datasets:
-                if "dcat_type" not in dataset:
-                    dataset["dcat_type"] = "http://inspire.ec.europa.eu/metadata-codelist/ResourceType/dataset"
-                
-                if dataset.get("type") == "dataset":
-                    yield dataset
-    except requests.exceptions.RequestException as e:
-        logging.error(f"Request error while communicating with CKAN instance {base_url}: {e}")
-    except Exception as e:
-        logging.error(f"Unexpected error: {e}")
+
+def build_catalogue(database, table_name, datasets):
+    """Build a complete SQLite catalogue beside the live file, then replace it atomically."""
+    parsed = make_url(database)
+    if parsed.drivername != "sqlite" or not parsed.database or parsed.database == ":memory:":
+        raise ValueError("Atomic catalogue refresh requires a file-backed SQLite database")
+    destination = pathlib.Path(parsed.database).resolve()
+    descriptor, staging = tempfile.mkstemp(prefix=destination.name + '.refresh-', suffix='.db', dir=destination.parent)
+    os.close(descriptor)
+    os.unlink(staging)  # pycsw setup_db creates its own database
+    staging_url = 'sqlite:///' + staging
+    context = pycsw.core.config.StaticContext()
+    repo = None
+    count = 0
+    try:
+        admin.setup_db(staging_url, table_name, "")
+        repo = repository.Repository(staging_url, context, table=table_name)
+        for dataset in datasets:
+            if dataset["dcat_type"].rsplit("/", 1)[-1] not in ("dataset", "series", "service"):
+                continue
+            converted = Dataset(dataset_raw=dataset, base_url=URL, mappings_folder=MAPPINGS_FOLDER,
+                                csw_schema=PYCSW_CKAN_SCHEMA)
+            mcf = read_mcf(converted.render_template)
+            output = OUPUT_SCHEMA.get(PYCSW_OUPUT_SCHEMA, ISO19139OutputSchema)()
+            if PYCSW_OUPUT_SCHEMA in OUPUT_SCHEMA:
+                xml = output.write(mcf=mcf, mappings_folder=MAPPINGS_FOLDER)
+            else:
+                xml = output.write(mcf=mcf)
+            record = metadata.parse_record(context, xml, repo)[0]
+            repo.insert(record, "local", util.get_today_and_now())
+            count += 1
+        if not count:
+            raise RuntimeError("Refusing to replace the catalogue with zero records")
+        repo.session.close()
+        repo.engine.dispose()
+        repo = None
+        with sqlite3.connect(staging) as connection:
+            if connection.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
+                raise RuntimeError("Catalogue failed SQLite integrity check")
+        os.replace(staging, destination)
+        logging.info("Published complete CSW catalogue: %s records", count)
+        return count
+    finally:
+        if repo is not None:
+            repo.session.close()
+            repo.engine.dispose()
+        if os.path.exists(staging):
+            os.unlink(staging)
+
 
 def main():
-    """
-    Convert metadata from CKAN to ISO19139 and store the records in a pycsw endpoint.
-
-    The function first sets up logging and reads the pycsw configuration from the specified file. It then checks if the pycsw database file exists and deletes it if it does.
-    
-    The database is then initialized using `pycsw.core.admin.setup_db()`. pycsw records are created and inserted into the database for each CKAN dataset that has a DCAT type of 'dataset', 'series', or 'service'.
-    
-    The records are created by rendering the CKAN metadata using a Jinja2 template and then transforming the resulting MCF dictionary into an XML string using a pycsw output schema.
-    
-    The function logs any errors that occur during this process and continues processing any remaining datasets.
-    
-    After all records have been inserted, the function exports them to the specified XML directory using
-    `pycsw.core.admin.export_records()`.
-
-    Returns
-    -------
-    None
-    """
+    """Refresh the catalogue without interrupting requests to the previous version."""
     log_file(APP_DIR + "/log")
-    logging.info(f"{log_module}:ckan2pycsw | Version: 0.1")
-    pycsw_config = ConfigParser()
-    pycsw_config.read_file(open(PYCSW_CONF))
-    database_raw = pycsw_config.get("repository", "database")
-    database = database_raw.replace("${PWD}", os.getcwd()) if DEV_MODE == "True" else database_raw
-    table_name = pycsw_config.get("repository", "table", fallback="records")
-    context = pycsw.core.config.StaticContext()
-
-    # check if cite.db exists in folder, and delete it if it does
-    database_path =  "/" + database.split("//")[-1]
-    
-    if pathlib.Path(database_path).exists():
-        os.remove(database_path)
-    pycsw.core.admin.setup_db(
-        database,
-        table_name,
-        "",
-    )
-
-    repo = repository.Repository(database, context, table=table_name)
-
-    dcat_type = [
-         "dataset", 
-         "series", 
-         "service"
-         ]
-    
-    # Only iterate over dataset if dataset["dcat_type"] in dcat_type
-    for dataset in (d for d in get_datasets(URL) if d["dcat_type"].rsplit("/", 1)[-1] in dcat_type):
-                # Add a counter of errors and valids datasets
-                print(d)
-                d_dcat_type = dataset["dcat_type"].rsplit("/", 1)[-1]
-                logging.info(f"{log_module}:ckan2pycsw | Metadata: {dataset['name']} [DCAT Type: {d_dcat_type.capitalize()}]")
-                try:
-                    dataset_metadata =  Dataset(dataset_raw=dataset, base_url=URL, mappings_folder=MAPPINGS_FOLDER,  csw_schema=PYCSW_CKAN_SCHEMA)
-                    mcf_dict = read_mcf(dataset_metadata.render_template)
-                    
-                    # Select an output schema based on OUPUT_SCHEMA if not exists use ISO19139
-                    if PYCSW_OUPUT_SCHEMA in OUPUT_SCHEMA:
-                        iso_os = OUPUT_SCHEMA[PYCSW_OUPUT_SCHEMA]()
-                        xml_string = iso_os.write(mcf=mcf_dict, mappings_folder=MAPPINGS_FOLDER)
-                    else:
-                        iso_os = ISO19139OutputSchema()
-                        xml_string = iso_os.write(mcf=mcf_dict)
-
-
-                    #TODO: DELETE Dumps to log
-                    #print(xml_string,  file=open(APP_DIR + "/log/demo.xml", "w", encoding="utf-8"))
-
-                    # parse xml
-                    record = metadata.parse_record(context, xml_string, repo)[0]
-                    repo.insert(record, "local", util.get_today_and_now())
-                except Exception as e:
-                    logging.error(f"{log_module}:ckan2pycsw | Fail when transform record from CKAN for: {dataset['name']} [DCAT Type: {d_dcat_type.capitalize()}] Error: {e}")
-                    continue
-
-    logging.info(f"{log_module}:ckan2pycsw | Create a CSW Endpoint at: {PYCSW_URL}")
-
-    # Export records to Folder
-    pycsw.core.admin.export_records(
-         context, 
-         database, 
-         table=table_name, 
-         xml_dirpath=APP_DIR + "/metadata/")
+    config = ConfigParser()
+    with open(PYCSW_CONF) as stream:
+        config.read_file(stream)
+    database = config.get("repository", "database").replace("${PWD}", os.getcwd())
+    table_name = config.get("repository", "table", fallback="records")
+    count = build_catalogue(database, table_name, get_datasets(URL))
+    # XML files are an export; a failed export must not prevent loading the new database.
+    try:
+        admin.export_records(pycsw.core.config.StaticContext(), database,
+                             table=table_name, xml_dirpath=APP_DIR + "/metadata/")
+    except Exception:
+        logging.exception("CSW catalogue was published, but its XML export failed")
+    return count
 
 
 def run_scheduler():
@@ -191,8 +181,7 @@ def run_scheduler():
     Schedule a recurring task to run at a specific time interval.
 
     The task will run every `PYCSW_CRON_DAYS_INTERVAL` days, starting at 4:00 a.m.
-    The task consists of checking if a gunicorn process is running, killing it if necessary,
-    running the `main()` function, and restarting gunicorn afterwards.
+    The task builds a new catalogue and gracefully reloads Gunicorn after success.
 
     Returns
     -------
@@ -204,28 +193,20 @@ def run_scheduler():
     scheduler.start()
 
 def run_tasks():
-    """
-    Check if gunicorn is running. Kill any gunicorn process with "gunicorn" or "pycsw.wsgi:application" in its name or command line.
-    Execute the main function. Restart gunicorn after the main function finishes.
-
-    Returns
-    -------
-    None
-    """
-    for proc in psutil.process_iter(["pid", "name", "cmdline"]):
-        if "gunicorn" in proc.info["name"] or "pycsw.wsgi:application" in ' '.join(proc.info["cmdline"]):
-            print(f"Stopping gunicorn process with PID {proc.info['pid']}...")
-            proc.kill()
-            time.sleep(5)  # Wait for the gunicorn process to fully stop
-
-    # Execute the main function
-    main()
-
-    # Restart gunicorn after the main function finishes
-    try:
-        subprocess.Popen(["pdm", "run", "python3", "-m", "gunicorn", "pycsw.wsgi:application", "-b", f"0.0.0.0:{PYCSW_PORT}"])
-    except Exception as e:
-        logging.error(f"{log_module}:ckan2pycsw | Error starting gunicorn: {e}")
+    """Keep serving the previous catalogue until its replacement is complete."""
+    main()  # Any harvest/conversion error leaves both the live database and server intact.
+    pidfile = pathlib.Path(APP_DIR) / "gunicorn.pid"
+    if pidfile.exists():
+        try:
+            process = psutil.Process(int(pidfile.read_text().strip()))
+            if "gunicorn" not in ' '.join(process.cmdline()):
+                raise RuntimeError("Gunicorn PID file points to another process")
+            process.send_signal(signal.SIGHUP)
+            return
+        except psutil.NoSuchProcess:
+            pidfile.unlink(missing_ok=True)
+    subprocess.Popen([sys.executable, "-m", "gunicorn", "pycsw.wsgi:application",
+                      "-b", f"0.0.0.0:{PYCSW_PORT}", "--pid", str(pidfile)])
 
 if __name__ == "__main__":
     if str(DEV_MODE).lower() == "true":

@@ -9,20 +9,20 @@
     "mcf": {"version": 1.0},
     "metadata": {
         {% if record['identifier'] %}
-            "identifier": "{{ record['identifier'] }}",
+            "identifier": {{ (record['identifier'])|json_string }},
         {% else %}
-            "identifier": "{{ record['id'] }}",
+            "identifier": {{ (record['id'])|json_string }},
         {% endif %}
-        "language": "{{ language_2code }}",
+        "language": {{ (language_2code)|json_string }},
         {% if language_alternate %}
-            "language_alternate": "{{ language_alternate }}",
+            "language_alternate": {{ (language_alternate)|json_string }},
         {% endif %}
         "charset": "UTF-8",
         {% if record['source'] %}
-            "parentidentifier": "{{ record['source'].rsplit('/', 1)[-1] }}",
+            "parentidentifier": {{ (record['source'].rsplit('/', 1)[-1])|json_string }},
         {% endif %}
-        "datestamp": "{{ record['metadata_modified']|normalize_datetime }}",
-        "dataseturi": "{{ url }}",
+        "datestamp": {{ (record['metadata_modified']|normalize_datetime)|json_string }},
+        "dataseturi": {{ (url)|json_string }},
         {% if dcat_type == 'service' %}
             {% if "catalog" in record['title'].lower() or "csw" in record['title'].lower() %}
             "servicetype": "discovery",
@@ -35,22 +35,22 @@
             {% endif %}
         {% endif %}
         "hierarchylevel": {
-            "value": "{{ dcat_type }}",
-            "uri": "{{ record['dcat_type'] }}"
+            "value": {{ (dcat_type)|json_string }},
+            "uri": {{ (record['dcat_type'])|json_string }}
         }
     },
     "spatial": {
-         {% if record['reference_system'] is defined %}
+         {% if record['reference_system'] %}
             "crs": {
-                "value": "{{ record['reference_system'].rsplit('/', 1)[-1] }}",
-                "uri": "{{ record['reference_system'] }}"
+                "value": {{ (record['reference_system'].rsplit('/', 1)[-1])|json_string }},
+                "uri": {{ (record['reference_system'])|json_string }}
             },
         {% elif record['conforms_to'] %}
             {% for conform in record['conforms_to'] %}
                 {% if "epsg" in conform.lower() %}
                     "crs": {
-                        "value": "{{ conform.rsplit('/', 1)[-1] }}",
-                        "uri": "{{ conform }}"
+                        "value": {{ (conform.rsplit('/', 1)[-1])|json_string }},
+                        "uri": {{ (conform)|json_string }}
                     },
                 {% else %}
                     "crs": {
@@ -67,64 +67,64 @@
         {% endif %}
         {# MD_GeometricObjectTypeCode: Not in INSPIRE #}
         {% if record['spatial_resolution_in_meters'] %}
-            "spatialresolution": "{{ record['spatial_resolution_in_meters'] }}",
+            "spatialresolution": {{ (record['spatial_resolution_in_meters'])|json_string }},
         {% endif %}
         {% if record['representation_type'] %}
-            "datatype": "{{ record['representation_type']|get_raw_value_from_ckan_schema(ckan_schema, 'representation_type') }}"
+            "datatype": {{ (record['representation_type']|get_raw_value_from_ckan_schema(ckan_schema, 'representation_type'))|json_string }}
         {% else %}
             "datatype": "vector"
         {% endif %}
     },
     "identification": {
-        "language": "{{ language_iso19115 }}",
-        "languagelabel": "{{ language_label }}",
+        "language": {{ (language_iso19115)|json_string }},
+        "languagelabel": {{ (language_label)|json_string }},
         "charset": "utf8",
         {% set title_translated = record['title_translated']|get_localized_dataset_value(language_2code, languages) %}
-        {% if title_translated is iterable and title_translated %}
+        {% if title_translated is mapping and title_translated %}
                 "title": {
                     {% for lang, value in title_translated.items() %}
-                        "{{ lang }}": "{{ value }}"
+                        {{ (lang)|json_string }}: {{ (value)|json_string }}
                     {% if not loop.last %},{% endif %}
                     {% endfor %}
                 },
         {% else %}
-            "title": "{{ record['title']|safe }}",
+            "title": {{ (record['title'])|json_string }},
         {% endif %}
         {% set notes_translated = record['notes_translated']|get_localized_dataset_value(language_2code, languages) %}
-        {% if notes_translated is iterable and notes_translated %}
+        {% if notes_translated is mapping and notes_translated %}
                 "abstract": {
                     {% for lang, value in notes_translated.items() %}
-                        "{{ lang }}": "{{ value }}"
+                        {{ (lang)|json_string }}: {{ (value)|json_string }}
                     {% if not loop.last %},{% endif %}
                     {% endfor %}
                 },
         {% else %}
-            "abstract": "{{ record['notes']|safe }}",
+            "abstract": {{ (record['notes'])|json_string }},
         {% endif %}
         {% if record['graphic_overview'] %}
-            "browsegraphic": "{{ record['graphic_overview'] }}",
+            "browsegraphic": {{ (record['graphic_overview'])|json_string }},
         {% endif %}
         {% if record['version'] %}
-            "edition": "{{ record['version'] }}",
+            "edition": {{ (record['version'])|json_string }},
         {% endif %}
         "dates": {
             {% if record['created'] %}
-                "creation": "{{ record['created']|normalize_datetime }}",
+                "creation": {{ (record['created']|normalize_datetime)|json_string }},
             {% else %}
-                "creation": "{{ '1900-01-01T00:00:00Z'|normalize_datetime }}",
+                "creation": {{ ('1900-01-01T00:00:00Z'|normalize_datetime)|json_string }},
             {% endif %}
             {% if record['issued'] or record['metadata_created'] %}
                 {% if record['issued'] %}
-                    "publication": "{{ record['issued']|normalize_datetime }}",
+                    "publication": {{ (record['issued']|normalize_datetime)|json_string }},
                 {% else %}
-                    "publication": "{{ record['metadata_created']|normalize_datetime }}",
+                    "publication": {{ (record['metadata_created']|normalize_datetime)|json_string }},
                 {% endif %}
             {% endif %}
             {% if record['modified'] or record['metadata_created'] %}
                 {% if record['modified'] %}
-                    "revision": "{{ record['modified']|normalize_datetime }}"
+                    "revision": {{ (record['modified']|normalize_datetime)|json_string }}
                 {% else %}
-                    "revision": "{{ record['metadata_modified']|normalize_datetime }}"
+                    "revision": {{ (record['metadata_modified']|normalize_datetime)|json_string }}
                 {% endif %}
             {% endif %}
         },
@@ -135,11 +135,11 @@
                 "keywords": [
                     {% for theme in record['theme'] %}
                     {
-                    "label": "{{ theme|get_mapping_value_from_yaml_list(input_field="theme", output_field='label', codelist="theme-dcat_ap",mappings_folder=mappings_folder + "/ckan_geodcatap") }}",
-                    "uri": "{{ theme }}"
+                    "label": {{ (theme|get_mapping_value_from_yaml_list(input_field="theme", output_field='label', codelist="theme-dcat_ap",mappings_folder=mappings_folder + "/ckan_geodcatap"))|json_string }},
+                    "uri": {{ (theme)|json_string }}
                     }{% if not loop.last %},{% endif %}
                     {% endfor %}
-                            
+
                 ],
                 "vocabulary": {
                     "name": "GEMET - INSPIRE themes, version 1.0",
@@ -151,10 +151,10 @@
             {#TODO: Add INSPIRE Priority dataset URI to CKAN #}
             {% if record['priority_dataset'] %}
             "prioritydataset": {
-                "keywords": [{ 
-                    "label": "{{ record['priority_dataset'].rsplit('/', 1)[-1] }}",
-                    "value": "{{ record['priority_dataset'].rsplit('/', 1)[-1] }}",
-                    "uri": "{{ record['priority_dataset'] }}"  
+                "keywords": [{
+                    "label": {{ (record['priority_dataset'].rsplit('/', 1)[-1])|json_string }},
+                    "value": {{ (record['priority_dataset'].rsplit('/', 1)[-1])|json_string }},
+                    "uri": {{ (record['priority_dataset'])|json_string }}
                     }],
                 "vocabulary": {
                     "name": "INSPIRE priority data set",
@@ -247,7 +247,7 @@
         },
         "topiccategory": [
             {% if record['topic'] %}
-                "{{ record['topic'].rsplit('/', 1)[-1] }}"
+                {{ (record['topic'].rsplit('/', 1)[-1])|json_string }}
             {% else %}
                 "biota"
             {% endif %}
@@ -259,22 +259,19 @@
                 {% set spatial_data = record['extras']["value"]%}
             {% endif %}
             "spatial": [
-                {
                 {% if spatial_data %}
-                    "bbox": "{{ spatial_data|get_bbox }}",
-                {% else %}
-                {# Spain BBox #}
-                    "bbox": "[-19.00, 27.60, 4.30, 44.60]",
-                {% endif %}
+                {
+                    "bbox": {{ (spatial_data|get_bbox)|json_string }},
                 "crs": 4326
                 }
+                {% endif %}
             ]
             {% if record['temporal_start'] and record['temporal_end'] %}
                 ,
                 "temporal": [
                     {
-                        "begin": "{{ record['temporal_start'] }}",
-                        "end": "{{ record['temporal_end'] }}"
+                        "begin": {{ (record['temporal_start'])|json_string }},
+                        "end": {{ (record['temporal_end'])|json_string }}
                     }
                 ]
             {% endif %}
@@ -282,8 +279,8 @@
         "fees": "None",
         {% if record['license_title'] and record['license_url'] %}
         "uselimitation": {
-                        "label": "{{record['license_title'] }}",
-                        "url" : "{{ record['license_url'] }}"
+                        "label": {{ (record['license_title'])|json_string }},
+                        "url" : {{ (record['license_url'])|json_string }}
                     },
         {% else %}
         "otherconstraints": "noConditionsApply",
@@ -296,8 +293,8 @@
                         },
             {% else %}
             "accessconstraints": {
-                        "label": "{{ record['access_rights']|get_mapping_value_from_yaml_list(input_field="uri", output_field='definition', codelist="rights",mappings_folder=mappings_folder + "/ckan_geodcatap") }}",
-                        "uri": "{{ record['access_rights'] }}"
+                        "label": {{ (record['access_rights']|get_mapping_value_from_yaml_list(input_field="uri", output_field='definition', codelist="rights",mappings_folder=mappings_folder + "/ckan_geodcatap"))|json_string }},
+                        "uri": {{ (record['access_rights'])|json_string }}
                         },
             {% endif %}
 
@@ -305,9 +302,9 @@
             "accessconstraints": {
                 "label": "There are no limitations on public access to spatial data sets and services.",
                 "uri": "http://inspire.ec.europa.eu/metadata-codelist/LimitationsOnPublicAccess/noLimitations"
-                },       
+                },
         {% endif %}
-        "url": "{{ url }}",
+        "url": {{ (url)|json_string }},
         "status": "UnderDevelopment",
         {#TODO: https://inspire.ec.europa.eu/metadata-codelist/MaintenanceFrequency #}
         "maintenancefrequency": "continual"
@@ -316,84 +313,58 @@
         {% if record['publisher_name'] is defined %}
             "publisher": {
                 {% if record['publisher_name'] %}
-                "organization": "{{ record['publisher_name'] }}",
+                "organization": {{ (record['publisher_name'])|json_string }},
                 {% endif %}
                 {% if record['publisher_email'] %}
-                "email": "{{ record['publisher_email'] }}",
+                "email": {{ (record['publisher_email'])|json_string }},
                 {% endif %}
-                {% if record['publisher_url'] %}
-                "url": "{{ record['publisher_url'] }}"
-                {% endif %}
+                "url": {{ (record['publisher_url'])|json_string }}
             },
         {% endif %}
         {% if record['author_name'] is defined %}
             "author": {
                 {% if record['author_name'] %}
-                "individualname": "{{ record['author_name'] }}",
+                "individualname": {{ (record['author_name'])|json_string }},
                 {% endif %}
                 {% if record['author_email'] %}
-                "email": "{{ record['author_email'] }}",
+                "email": {{ (record['author_email'])|json_string }},
                 {% endif %}
-                {% if record['author_url'] %}
-                "url": "{{ record['author_url'] }}"
-                {% endif %}
+                "url": {{ (record['author_url'])|json_string }}
             },
         {% endif %}
         "pointOfContact": {
-            "organization": "{{ record['contact_name'] }}",
-            "email": "{{ record['contact_email'] }}",
-            "url": "{{ record['contact_url'] }}"
+            "organization": {{ (record['contact_name'])|json_string }},
+            "email": {{ (record['contact_email'])|json_string }},
+            "url": {{ (record['contact_url'])|json_string }}
         }
     },
     "distribution": {
-            {% for resource in record['resources'] %}
-            {% if resource.format is not none and resource.format != "" %}
-                {% set distribution_type = resource.format.rsplit('/', 1)[-1]|get_mapping_values_dict_from_yaml_list(input_field='format', output_field='identifier', codelist='distribution_type', mappings_folder=mappings_folder + '/inspire') %}
-                    "{{ resource.format.lower() }}": {
-                        "name": "{{ resource['name'] }}",
-                        {% if resource_type == "service" and 'wms' in resource['format'] or 'wfs' in resource['format'] or 'wmts' in resource['format'] or 'wcs' in resource['format'] or 'ogc' in resource['format'] %}
-                            "description": "{{ resource['description'] }}",
-                        {% elif resource['description'] is not none and resource['description'] != "" %}
-                            "description": "{{ resource['description'] }}",
-                        {% endif %}
-                        "format": "{{ resource['format'] }}",
-                        {% if distribution_type is mapping %}
-                            "format_uri": "{{ distribution_type['uri'] }}",
-                        {% elif resource['mimetype'] is not none and resource['mimetype'] != "" %}
-                            "format_uri": "{{ resource['mimetype'] }}",
-                        {% endif %}
-                        {% if resource['format_version'] %}
-                            "format_version": "{{ resource['format_version'] }}",
-                        {% else %}
-                            "format_version": "{{ resource['format_version'] }}",
-                        {% endif %}
-                        {% if distribution_type is mapping and distribution_type['identifier'] %}
-                            "type": "{{ distribution_type['identifier'] }}",
-                        {% else %}
-                            "type": "{{ resource['format'] }}",
-                        {% endif %}
-                        "url": "{{ resource['url'] }}",
-                        {% if 'wfs' in resource['format'] %}
-                            "function": "download"
-                        {% else %}
-                        "function": "information"
-                        {% endif %}
-                    }
-                    {% if not loop.last %},{% endif %}
-            {% endif %}
+        {% for resource in record['resources'] %}
+            {% set format = resource.get('format') or '' %}
+            {% set distribution_type = format.rsplit('/', 1)[-1]|get_mapping_values_dict_from_yaml_list(input_field='format', output_field='identifier', codelist='distribution_type', mappings_folder=mappings_folder + '/inspire') %}
+            {{ (loop.index)|json_string }}: {
+                "name": {{ (resource['name'])|json_string }},
+                "description": {{ (resource['description'])|json_string }},
+                "format": {{ (format)|json_string }},
+                "format_uri": {{ (distribution_type.get('uri', '') if distribution_type is mapping else resource.get('mimetype', ''))|json_string }},
+                "format_version": {{ (resource['format_version'])|json_string }},
+                "type": {{ (distribution_type.get('identifier', format) if distribution_type is mapping else format)|json_string }},
+                "url": {{ (resource['url'])|json_string }},
+                "function": {{ ('download' if 'wfs' in format.lower() else 'information')|json_string }}
+            }{% if not loop.last %},{% endif %}
         {% endfor %}
     },
 
     "dataquality": {
         "scope": {
-            "level": "{{ record['dcat_type'].rsplit('/', 1)[-1] }}"
+            "level": {{ (record['dcat_type'].rsplit('/', 1)[-1])|json_string }}
         },
         "lineage": {
             {% if record['lineage_process_steps'] %}
                 "processstep": [
                     {% for step in record['lineage_process_steps'] %}
                         {
-                            "description": "{{ step|safe }}"
+                            "description": {{ (step)|json_string }}
                         }{% if not loop.last %},{% endif %}
                     {% endfor %}
                     ],
@@ -402,13 +373,13 @@
                 "source": [
                     {% for source in record['lineage_source'] %}
                         {
-                            "description": "{{ source|safe }}"
+                            "description": {{ (source)|json_string }}
                         }{% if not loop.last %},{% endif %}
                     {% endfor %}
                     ],
             {% endif %}
             {% if record['provenance'] %}
-                "statement": "{{ record['provenance']|get_localized_dataset_value(language_2code, languages, true) }}"
+                "statement": {{ (record['provenance']|get_localized_dataset_value(language_2code, languages, true))|json_string }}
             {% else %}
                 "statement": "No lineage statement provided"
             {% endif %}

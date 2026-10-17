@@ -1,5 +1,7 @@
 # inbuilt libraries
 from datetime import date, datetime
+from copy import deepcopy
+from functools import lru_cache
 import yaml
 import os
 import pathlib
@@ -9,7 +11,7 @@ import six
 
 # third-party libraries
 from shapely.geometry import shape
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, Undefined
 from jinja2.exceptions import TemplateNotFound
 
 # pygeometa deps
@@ -27,6 +29,40 @@ SCHEMAS_PYGEOMETA = pathlib.Path(__file__).resolve().parent.parent / 'schemas/py
 MAPPINGS = pathlib.Path(__file__).resolve().parent.parent / 'mappings'
 VERSION = pkg_resources.require('pygeometa')[0].version
 DEFAULT_LABEL_LANG = 'en'
+
+@lru_cache(maxsize=128)
+def load_yaml(path):
+    """Mapping files are immutable for the lifetime of the converter process."""
+    with open(path, encoding='utf-8') as stream:
+        return yaml.safe_load(stream)
+
+
+def json_string(value):
+    """Serialize a template scalar without altering quotes, Unicode or backslashes."""
+    if value is None or isinstance(value, Undefined):
+        value = ''
+    return json.dumps(str(value), ensure_ascii=False)
+
+
+def normalize_ckan_record(record):
+    """Decode CKAN structured fields without modifying free text or the caller."""
+    record = deepcopy(record)
+    for key in ('title_translated', 'notes_translated', 'provenance', 'spatial', 'theme',
+                'tag_uri', 'conforms_to', 'lineage_source', 'lineage_process_steps'):
+        value = record.get(key)
+        if isinstance(value, str):
+            try:
+                decoded = json.loads(value)
+            except (ValueError, TypeError):
+                continue
+            if isinstance(decoded, (dict, list)):
+                record[key] = decoded
+    record['language'] = record.get('language') or 'http://publications.europa.eu/resource/authority/language/ENG'
+    for key in ('resources', 'tag_uri', 'theme', 'conforms_to', 'lineage_source', 'lineage_process_steps'):
+        if record.get(key) is None:
+            record[key] = []
+    return record
+
 
 # Custom exceptions.
 class MappingValueNotFoundError(Exception):
@@ -56,6 +92,7 @@ def render_j2_template(mcf: dict, schema_type: str, url: str = None, template_di
     MCF dictionary rendered with JINJA template.
     """
     FILTERS = {
+        'json_string': json_string,
         'get_mapping_value_from_yaml_list':get_mapping_value_from_yaml_list,
         'get_mapping_values_dict_from_yaml_list':get_mapping_values_dict_from_yaml_list,
         'get_mapping_value': get_mapping_value,
@@ -87,14 +124,13 @@ def render_j2_template(mcf: dict, schema_type: str, url: str = None, template_di
 
     if schema_type == 'ckan':
         LOGGER.debug(f'Setting up template environment {template_dir} of type {schema_type}')
-        env = Environment(loader=FileSystemLoader(os.path.join(SCHEMAS_CKAN, template_dir)), autoescape=True)
+        env = Environment(loader=FileSystemLoader(os.path.join(SCHEMAS_CKAN, template_dir)), autoescape=template_dir != "iso19139_geodcatap")
 
         if template_dir != "iso19139_base":
             LOGGER.debug(f'Adding CKAN Schema mapping:{template_dir}')
             ckan_schema_path = get_mapping_value(value=template_dir, codelist="ckan-pycsw_assigments",mappings_folder=mappings_folder)
             schema_file = MAPPINGS / f"{ckan_schema_path}" / "ckan_schema.yaml"
-            with open(schema_file, "r", encoding='utf-8') as f:
-                ckan_schema = yaml.safe_load(f)
+            ckan_schema = load_yaml(str(schema_file))
             env.globals.update(ckan_schema=ckan_schema)
 
         LOGGER.debug('Adding template filters')
@@ -116,11 +152,14 @@ def render_j2_template(mcf: dict, schema_type: str, url: str = None, template_di
             raise RuntimeError(msg)
 
         LOGGER.debug('Processing CKAN template to JSON')
-        mcf = update_object_lists(mcf)
+        mcf = normalize_ckan_record(mcf) if template_dir == "iso19139_geodcatap" else update_object_lists(mcf)
 
         try:
-            # Render the template and directly attempt to correct and deserialize the JSON string
-            mcf_dict = json.loads(re.sub(r'\\(?!["\\/bfnrtu])', r'\\\\', template.render(record=mcf)), strict=False)
+            rendered = template.render(record=mcf)
+            if template_dir == "iso19139_geodcatap":
+                mcf_dict = json.loads(rendered)
+            else:
+                mcf_dict = json.loads(re.sub(r'\\(?!["\\/bfnrtu])', r'\\\\', rendered), strict=False)
         except json.JSONDecodeError as e:
             LOGGER.error("Error deserializing the template output: %s", e)
             # Optionally: Save the problematic output for debugging
@@ -131,7 +170,7 @@ def render_j2_template(mcf: dict, schema_type: str, url: str = None, template_di
 
     if schema_type == 'pygeometa':
         LOGGER.debug(f'Setting up template environment {template_dir} of type {schema_type}')
-        env = Environment(loader=FileSystemLoader(os.path.join(SCHEMAS_PYGEOMETA, template_dir)))
+        env = Environment(loader=FileSystemLoader(os.path.join(SCHEMAS_PYGEOMETA, template_dir)), autoescape=True)
     
         LOGGER.debug('Adding template filters')
         env.globals.update(default_label_lang=DEFAULT_LABEL_LANG)
@@ -239,7 +278,7 @@ def get_mapping_value(
     MappingValueNotFoundError: ValueError. If the given value is not found in the mapping.
     """
     try:
-        map_yaml = yaml.safe_load(open(os.path.join(mappings_folder, codelist + ".yaml"), encoding="utf-8"))
+        map_yaml = load_yaml(os.path.join(mappings_folder, codelist + ".yaml"))
     except ValueError:
         raise MappingValueNotFoundError(value, codelist) from None
 
@@ -275,13 +314,13 @@ def get_mapping_value_from_yaml_list(
     MappingValueNotFoundError: If the codelist YAML file cannot be loaded.
     """
     try:
-        map_yaml = yaml.safe_load(open(os.path.join(mappings_folder, codelist + ".yaml"), encoding="utf-8"))
+        map_yaml = load_yaml(os.path.join(mappings_folder, codelist + ".yaml"))
     except ValueError:
         raise MappingValueNotFoundError(value, codelist) from None
     
     output_value = value
     for item in map_yaml:
-        if value in item[input_field]:
+        if isinstance(value, str) and value and value in item[input_field]:
             if item[output_field] is not None:
                 output_value = item[output_field]
             else:
@@ -316,13 +355,13 @@ def get_mapping_values_dict_from_yaml_list(
     MappingValueNotFoundError: If the codelist YAML file cannot be loaded.
     """
     try:
-        map_yaml = yaml.safe_load(open(os.path.join(mappings_folder, codelist + ".yaml"), encoding="utf-8"))
+        map_yaml = load_yaml(os.path.join(mappings_folder, codelist + ".yaml"))
     except ValueError:
         raise MappingValueNotFoundError(value, codelist) from None
     
     output_value = value
     for item in map_yaml:
-        if value in item[input_field]:
+        if isinstance(value, str) and value and value in item[input_field]:
             if item[output_field] is not None:
                 output_value = item
             else:
