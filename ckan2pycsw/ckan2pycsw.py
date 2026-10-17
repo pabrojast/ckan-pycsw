@@ -81,7 +81,8 @@ def get_datasets(base_url):
     start = 0
     total = None
     while total is None or start < total:
-        response = requests.get(package_search, params={
+        # A read-only action via POST bypasses independently cached GET pages.
+        response = requests.post(package_search, json={
             "start": start, "rows": 100, "sort": "id asc"
         }, timeout=(10, 120))
         response.raise_for_status()

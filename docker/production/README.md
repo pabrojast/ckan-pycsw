@@ -18,7 +18,8 @@ docker run --rm --network none --security-opt label=disable \
 ```
 
 The converter requires a file-backed SQLite repository. It fetches public CKAN
-metadata with bounded requests and stable pagination. An incomplete harvest,
+metadata with bounded, read-only POST requests and stable pagination. POST
+bypasses caches that may otherwise return inconsistent GET pages. An incomplete harvest,
 conversion error, duplicate or empty result leaves the previous catalogue
 untouched. A complete, integrity-checked staging database replaces it atomically;
 Gunicorn then reloads gracefully. Optional language defaults to English, as in

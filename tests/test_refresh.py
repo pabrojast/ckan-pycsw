@@ -59,7 +59,7 @@ class RefreshTests(unittest.TestCase):
             {'success': True, 'result': {'count': 2, 'results': [{'id': 'a', 'type': 'dataset'}]}},
             {'success': True, 'result': {'count': 2, 'results': []}},
         ]
-        with patch.object(refresh.requests, 'get', return_value=response):
+        with patch.object(refresh.requests, 'post', return_value=response):
             with self.assertRaisesRegex(RuntimeError, 'incomplete page'):
                 list(refresh.get_datasets('https://example.test/'))
 
@@ -67,6 +67,6 @@ class RefreshTests(unittest.TestCase):
         response = Mock()
         response.json.return_value = {'success': True, 'result': {
             'count': 1, 'results': [{'id': 'private', 'type': 'dataset', 'private': True}]}}
-        with patch.object(refresh.requests, 'get', return_value=response):
+        with patch.object(refresh.requests, 'post', return_value=response):
             with self.assertRaisesRegex(RuntimeError, 'private dataset'):
                 list(refresh.get_datasets('https://example.test/'))
